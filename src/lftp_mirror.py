@@ -8,6 +8,36 @@
 #===============================================================================
 # This Script mirrors a remote FTP server dir with a local dir (or vice versa)
 # and stores a daily compressed copy of local dir
+#
+# The real job is done by the marvelous lftp program by Alexander V. Lukyanov 
+# and it's necessary to run this script
+# http://lftp.yar.ru/
+#
+# This script can be executed in three ways:
+#    
+#   a) shell: command line interactive
+#   b) cron: as a programmed task
+#   c) cfg: importing arguments from a config file
+#    
+# In the first way, you need to give the required arguments (site, remote FTP 
+# directory and local directory) to the script in the command line. Optional
+# arguments, obviously, are optional.
+#    
+# As a programmed task, don't need supply the arguments in the command line.
+# It takes the scripts parameters (previously defined) as default command line 
+# arguments. These defines the required and several optional arguments (which 
+# can left blank): user, password, port and options (the other). It's useful for
+# set up a cron programmed task with a single command line argument, 'cron'   
+#
+# Finally, the last way is ideal for running multiple mirror operations. With a 
+# one configuration file can set up various mirror actions with different sites 
+# or directories, and do all of them in a single script execution. Arguments are
+# imported from this config file, with a section for each mirror operation, and 
+# there are not limits for sections.  
+#
+# For further information visits the lftp_mirror's website:  
+#     http://code.joedicastro.com/lftp-mirror
+#
 #===============================================================================
 
 #===============================================================================
@@ -29,24 +59,22 @@
 
 __author__ = "joe di castro - joe@joedicastro.com"
 __license__ = "GNU General Public License version 3"
-__date__ = "26/05/2010"
-__version__ = "0.4"
+__date__ = "23/11/2010"
+__version__ = "0.5"
 
 try:
     import sys
     import os
     import glob
-    import argparse
-    import optparse
     import base64
     import time
     import re
     import tarfile
-    import pynotify
-    import gtk
     import platform
     import socket
     import smtplib
+    from argparse import ArgumentParser, SUPPRESS
+    from ConfigParser import SafeConfigParser
     from subprocess import Popen, PIPE, STDOUT
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
@@ -56,6 +84,15 @@ except ImportError:
     print((os.linesep * 2).join(["An error found importing one module:",
     str(sys.exc_info()[1]), "You need to install it", "Exit..."]))
     sys.exit(-2)
+
+# Notify it's not essential and libnotify it's not always installed (in Ubuntu &
+# Debian it's optional) but it's very useful to show operation's progress
+try:
+    import pynotify
+    import gtk
+    NOT_NOTIFY = False
+except ImportError:
+    NOT_NOTIFY = True
 
 class Logger():
     """
@@ -253,119 +290,169 @@ class Logger():
         with open('{0}.log'.format(self.__script_name), mode) as log_file:
             log_file.write(self.__log)
 
-def options():
-    """Defines the command line arguments and options for the script"""
-    usage = """usage: %prog site remote_FTP_dir local_dir [Options]
+def arguments():
+    """Defines the command line arguments for the script."""
+    main_desc = ("Mirror a remote FTP directory into a local directory or vice "
+                 "versa through the lftp program")
+    subs_desc = "Select a running mode from the following:"
+    epilog = ("For detailed help for each mode, select a mode followed by help "
+              "option, e.g.:{0}{0}%(prog)s shell -h").format(os.linesep)
+    cron_use = "%(prog)s [options]"
+    shell_use = ("%(prog)s site remote local [options]{0}{0}By default "
+                 "downloads the changes from remote FTP directory to local "
+                 "directory.{0}To upload changes from local to remote FTP, use "
+                 "the 'r, --reverse' option").format(os.linesep)
+    file_use = ("%(prog)s config_file [options]{0}{0}The structure of the "
+                "config file (a simple text file) is as follows:{0}{0}[section]"
+                "{0}site = {{ftp server URL or IP}}{0}port = (ftp server port)"
+                "{0}remote = {{remote directory}}{0}local = {{local directory}}"
+                "{0}user = (ftp server username){0}password = (user password "
+                "encoded in base64){0}options = (other options){0}{0}Section is"
+                " a name that defines the mirror operation. Usually is the ftp "
+                "server's name or directory' name. Useful for distinguish one "
+                "mirror operation from others. Write one section for each "
+                "mirror action with no limits in the number of sections.{0}{0}"
+                "Values between curly brackets '{{}}' are required arguments "
+                "and values between brackets '()' are optional arguments. If "
+                "don't want optional arguments, left them blank.{0}{0}The order"
+                " of arguments doesn't matter, but all are needed.{0}{0}"
+                " ").format(os.linesep)
 
-By default downloads the changes from remote FTP directory to local directory.
-To upload changes from local to remote FTP, use the "-r, --reverse" option"""
-    desc = "Mirror a remote FTP dir into a local dir or vice versa"
-    parser = optparse.OptionParser(usage=usage, version="%prog " + __version__,
-                                   description=desc)
-    parser.add_option("-u", "--user", dest="user",
-                      help="The ftp account user. If no present, "
-                      "use the script default", metavar='user')
-    parser.add_option("-p", "--pass", dest="password",
-                      help="The ftp account password. If no present, "
-                      "use the script default", metavar='password')
-    parser.add_option("-a", "--anon", action='store_true', dest="anonymous",
-                      help="Set user as anonymous. "
-                      "Disables user and password options", default=False)
-    parser.add_option("-s", "--secure", action='store_const', const='s',
-                       dest="secure", default='',
-                      help="Uses the sftp protocol instead of ftp")
-    parser.add_option("-e", "--erase", action='store_const', const='e',
-                      dest="erase", default='',
-                      help="Delete files not present at target site")
-    parser.add_option("-n", "--newer", action='store_const', const='n',
-                      dest="newer", default='',
-                      help="Download only newer files")
-    parser.add_option("-P", "--parallel", action='store_const', const='P',
-                      dest="parallel", default='',
-                      help="Download files in parallel")
-    parser.add_option("-r", "--reverse", action='store_const', const='R',
-                      dest="reverse", default='',
-                      help="Reverse, upload files from local to remote")
-    parser.add_option("--delete-first", action='store_const',
-                      const=' --delete-first',
-                      dest="del_first", default='',
-                      help="Delete old files before transferring new ones")
-    parser.add_option("--depth-first", action='store_const',
-                      const=' --depth-first',
-                      dest="depth_first", default='',
-                      help="Descend into subdirectories, before transfer files")
-    parser.add_option("--no-empty-dirs", action='store_const',
-                      const=' --no-empty-dirs',
-                      dest="no_empty", default='',
-                      help="Don't create empty dirs (needs --depth-first)")
-    parser.add_option("--no-recursion", action='store_const',
-                      const=' --no-recursion',
-                      dest="no_recursion", default='',
-                      help="Don't go to subdirectories")
-    parser.add_option("--dry-run", action='store_const',
-                      const=' --dry-run',
-                      dest="dry_run", default='',
-                      help="Simulation, don't execute anything. Writes to log")
-    parser.add_option("--use-cache", action='store_const',
-                      const=' --use-cache',
-                      dest="cache", default='',
-                      help="Use cached directory listings")
-    parser.add_option("--del-source", action='store_const',
-                      const=' --Remove-source-files',
-                      dest="del_source", default='',
-                      help="Remove files (no dirs) after transfer (Caution!)")
-    parser.add_option("--only-missing", action='store_const',
-                      const=' --only-missing',
-                      dest="missing", default='',
-                      help="Download only missing files")
-    parser.add_option("--only-existing", action='store_const',
-                      const=' --only-existing',
-                      dest="existing", default='',
-                      help="Download only files already existing at target")
-    parser.add_option("--loop", action='store_const',
-                      const=' --loop',
-                      dest="loop", default='',
+    parser = ArgumentParser(description=main_desc, epilog=epilog)
+    subparsers = parser.add_subparsers(title="running modes",
+                                       description=subs_desc)
+
+    cron = subparsers.add_parser("cron", help="ideal to run as a scheduled task"
+                                 ". Takes arguments from parameters defined "
+                                 "within the script", usage=cron_use)
+    cron.add_argument("cron", action="store_true", help=SUPPRESS,
+                      default=SUPPRESS)
+    cron.add_argument("cfg", action="store_false", help=SUPPRESS,
+                      default=SUPPRESS)
+
+    cfg = subparsers.add_parser("cfg", help="ideal for mirror multiple sites/"
+                                "directories. Imports the arguments from a "
+                                "config file", usage=file_use)
+    cfg.add_argument("cron", action="store_false", help=SUPPRESS,
+                      default=SUPPRESS)
+    cfg.add_argument("cfg", action="store_true", help=SUPPRESS,
+                      default=SUPPRESS)
+    cfg.add_argument("config_file", help="config file to import arguments")
+
+    shell = subparsers.add_parser("shell", help="usual mode, takes arguments "
+                                  "from the command line ", usage=shell_use)
+    shell.add_argument("cron", action="store_false", help=SUPPRESS,
+                        default=SUPPRESS)
+    shell.add_argument("cfg", action="store_false", help=SUPPRESS,
+                      default=SUPPRESS)
+    shell.add_argument("site", help="the ftp server (URL or IP)")
+    shell.add_argument("remote", help="the remote directory")
+    shell.add_argument("local", help="the local directory")
+
+    auth = shell.add_mutually_exclusive_group(required=True)
+    auth.add_argument("-l", "--login", dest="login", nargs=2,
+                        help="the ftp account's username and password",
+                        metavar=("user", "password"))
+    auth.add_argument("-a", "--anon", action="store_true", dest="anonymous",
+                        help="set user as anonymous", default=False)
+
+    shell.add_argument("-p", "--port", dest="port", default="",
+                       help="the ftp server port", metavar="port")
+    shell.add_argument("-s", "--secure", action="store_const", const="s",
+                        dest="secure", default="",
+                        help="use the sftp protocol instead of ftp")
+    shell.add_argument("-e", "--erase", action="store_const", const="e",
+                      dest="erase", default="",
+                      help="delete files not present at target site")
+    shell.add_argument("-n", "--newer", action="store_const", const="n",
+                      dest="newer", default="",
+                      help="download only newer files")
+    shell.add_argument("-P", "--parallel", action="store_const", const="P",
+                      dest="parallel", default="",
+                      help="download files in parallel")
+    shell.add_argument("-r", "--reverse", action="store_const", const="R",
+                      dest="reverse", default="",
+                      help="reverse, upload files from local to remote")
+    shell.add_argument("--delete-first", action="store_const",
+                      const=" --delete-first", dest="del_first", default="",
+                      help="delete old files before transferring new ones")
+    shell.add_argument("--depth-first", action="store_const",
+                      const=" --depth-first", dest="depth_first", default="",
+                      help="descend into subdirectories, before transfer files")
+    shell.add_argument("--no-empty-dirs", action="store_const",
+                      const=" --no-empty-dirs", dest="no_empty_dir", default="",
+                      help="don't create empty dirs (needs --depth-first)")
+    shell.add_argument("--no-recursion", action="store_const",
+                      const=" --no-recursion", dest="no_recursion", default="",
+                      help="don't go to subdirectories")
+    shell.add_argument("--dry-run", action="store_const",
+                      const=" --dry-run", dest="dry_run", default="",
+                      help="simulation, don't execute anything. Writes to log")
+    shell.add_argument("--use-cache", action="store_const",
+                      const=" --use-cache", dest="use_cache", default="",
+                      help="use cached directory listings")
+    shell.add_argument("--del-source", action="store_const",
+                      const=" --Remove-source-files",
+                      dest="del_source", default="",
+                      help="remove files (no dirs) after transfer (Caution!)")
+    shell.add_argument("--only-missing", action="store_const",
+                      const=" --only-missing", dest="missing", default="",
+                      help="download only missing files")
+    shell.add_argument("--only-existing", action="store_const",
+                      const=" --only-existing", dest="existing", default="",
+                      help="download only files already existing at target")
+    shell.add_argument("--loop", action="store_const",
+                      const=" --loop", dest="loop", default="",
                       help="Loop until no changes found")
-    parser.add_option("--ignore-size", action='store_const',
-                      const=' --ignore-size',
-                      dest="size", default='',
+    shell.add_argument("--ignore-size", action="store_const",
+                      const=" --ignore-size", dest="size", default="",
                       help="ignore size when deciding whether to download")
-    parser.add_option("--ignore-time", action='store_const',
-                      const=' --ignore-time',
-                      dest="time", default='',
+    shell.add_argument("--ignore-time", action="store_const",
+                      const=" --ignore-time", dest="time", default="",
                       help="ignore time when deciding whether to download")
-    parser.add_option("--no-perms", action='store_const',
-                      const=' --no-perms',
-                      dest="perms", default='',
-                      help="don't set file permissions")
-    parser.add_option("--no-umask", action='store_const',
-                      const=' --no-umask',
-                      dest="umask", default='',
-                      help="don't apply umask to file modes")
-    parser.add_option("--no-symlinks", action='store_const',
-                      const=' --no-symlinks',
-                      dest="symlinks", default='',
+    shell.add_argument("--no-perms", action="store_const",
+                      const=" --no-perms", dest="no_perms", default="",
+                      help="don't set cfg permissions")
+    shell.add_argument("--no-umask", action="store_const",
+                      const=" --no-umask", dest="no_umask", default="",
+                      help="don't apply umask to cfg modes")
+    shell.add_argument("--no-symlinks", action="store_const",
+                      const=" --no-symlinks", dest="no_symlinks", default="",
                       help="don't create symbolic links")
-    parser.add_option("--allow-suid", action='store_const',
-                      const=' --allow-suid',
-                      dest="suid", default='',
+    shell.add_argument("--allow-suid", action="store_const",
+                      const=" --allow-suid", dest="suid", default="",
                       help="set suid/sgid bits according to remote site")
-    parser.add_option("--allow-chown", action='store_const',
-                      const=' --allow-chown',
-                      dest="chown", default='',
+    shell.add_argument("--allow-chown", action="store_const",
+                      const=" --allow-chown",
+                      dest="chown", default="",
                       help="try to set owner and group on files")
-    parser.add_option("--dereference", action='store_const',
-                      const=' --dereference',
-                      dest="dereference", default='',
+    shell.add_argument("--dereference", action="store_const",
+                      const=" --dereference", dest="dereference", default="",
                       help="download symbolic links as files")
 
-    parser.add_option("-q", "--quiet", action='store_true', dest='quiet',
-                       help="The detailed mirror process is no "
-                       "displayed, but is added to the log.", default=False)
-    parser.add_option("--no-email", action='store_true', dest='no_email',
-                       help="No sends email with the log", default=False)
-    parser.add_option("--no-compress", action='store_true', dest='no_compress',
-                      help="Don't create daily archive files", default=False)
+    shell.add_argument("-q", "--quiet", action="store_true", dest="quiet",
+                       help="the detailed shell process is no "
+                       "displayed, but is added to the log", default=False)
+    shell.add_argument("--no-compress", action="store_true",
+                        dest="no_compress", help="don't create daily archive "
+                        "files", default=False)
+    shell.add_argument("--no-email", action="store_true", dest="no_email",
+                       help="no sends email with the log", default=False)
+    shell.add_argument("--smtp_server", dest="smtp_server", default="localhost",
+                       metavar="server", help="set a smtp server")
+    shell.add_argument("--smtp_user", dest="smtp_user", default="",
+                       metavar="user", help="the smtp server username")
+    shell.add_argument("--smtp_pass", dest="smtp_pass", default="",
+                       metavar="password", help="the smtp server password")
+    shell.add_argument("--from_addr", dest="from_addr", default="",
+                       metavar="email", help="sender's email address")
+    shell.add_argument("--to_addrs", dest="to_addrs", default="", nargs='+',
+                       metavar="email",
+                       help="a list of receiver(s)' email address(es)")
+
+    parser.add_argument("-v", "--version", action="version",
+                        version="%(prog)s {0}".format(__version__),
+                        help="show program's version number and exit")
     return parser
 
 def check_execs_posix_win(*progs):
@@ -416,6 +503,8 @@ def notify(msg, status):
     (str) status -- Type of notification status (ok|info|error|warm|ask|sync)
 
     """
+    if NOT_NOTIFY:
+        return
     if not pynotify.is_initted():
         pynotify.init('lftp_mirror')
     note = pynotify.Notification("LFTP Mirror", msg)
@@ -426,7 +515,6 @@ def notify(msg, status):
     icon = helper.render_icon(icons[status], gtk.ICON_SIZE_BUTTON)
     note.set_icon_from_pixbuf(icon)
     note.show()
-    return
 
 def bes_unit_size(f_size):
     """Get a size in bytes and convert it for the best unit for readability.
@@ -456,149 +544,158 @@ def get_size(the_path):
             path_size += os.path.getsize(filename)
     return path_size
 
-def compress(r_path):
-    """Compress the local directory into a gz file.
+def compress(path):
+    """Compress a local directory into a gz file.
 
     Creates a file for each weekday, an removes the old files if exists"""
-    output = ''
-    old_gzs = glob.glob('*_{0}.tar.gz'.format(time.strftime('%a')))
-    r_dir = re.findall('(?:.*\/)?(.*)', r_path)[0]
-    name = "{0}_{1}.tar.gz".format(r_dir, time.strftime('%d%b%Y_%H:%M_%a'))
-    gz_file = tarfile.open(name, "w:gz")
-    gz_file.add(r_path, arcname=r_dir)
+    dir2gz = os.path.basename(path)
+    old_gzs = glob.glob('{0}*{1}.tar.gz'.format(dir2gz, time.strftime('%a')))
+    gz_name = "{0}_{1}.tar.gz".format(dir2gz, time.strftime('%d%b%Y_%H:%M_%a'))
+    gz_file = tarfile.open(gz_name, "w:gz")
+    gz_file.add(path, arcname=dir2gz)
     gz_file.close()
-    output = 'Created file{1}{0}{1}'.format(os.path.join(r_path, name),
-                                            os.linesep)
-    for gz_f in old_gzs:
-        os.remove(gz_f)
-        output += 'Deleted old file {0}{1}'.format(gz_f, os.linesep)
+    output = os.linesep.join(['Created file:', '', os.path.join(os.getcwd(),
+                                                                gz_name)])
+    for old_gz in old_gzs:
+        os.remove(old_gz)
+        output += os.linesep.join([os.linesep, 'Deleted old file:', '', old_gz])
     return output
 
+def mirror(args, log):
+    """Mirror the directories."""
+
+    user = '' if args.anonymous else ' '.join(args.login)
+    local, remote = os.path.normpath(args.local), os.path.normpath(args.remote)
+    port = '-p {0}'.format(args.port) if args.port else ''
+
+    url = 'http://code.joedicastro.com/lftp-mirror'
+    msg = 'Connected to {1} as {2}{0}'.format(os.linesep, args.site, 'anonymous'
+                                              if args.anonymous
+                                              else args.login[0])
+    msg += 'Mirror {0} to {1}'.format(local if args.reverse else remote,
+                                      remote if args.reverse else local)
+    log.header(url, msg)
+    log.time('Start time')
+    notify('Mirroring with {0}...'.format(args.site), 'sync')
+
+    if not os.path.exists(local):
+        os.mkdir(local)
+        log.list('Created new directory', local)
+    os.chdir(os.path.join(local, os.pardir))
+
+    # create the script file to import with lftp
+    scp_args = ('-vvv' + args.erase + args.newer + args.parallel + args.reverse
+                + args.del_first + args.depth_first + args.no_empty_dir +
+                args.no_recursion + args.dry_run + args.use_cache +
+                args.del_source + args.missing + args.existing + args.loop +
+                args.size + args.time + args.no_perms + args.no_umask +
+                args.no_symlinks + args.suid + args.chown + args.dereference)
+
+    with open('ftpscript', 'w') as script:
+        lines = ('open {0}ftp://{1} {2}'.format(args.secure, args.site, port),
+                 'user {0}'.format(user),
+                 'mirror {0} {1} {2}'.format(scp_args,
+                                             local if args.reverse else remote,
+                                             remote if args.reverse else local),
+                'exit')
+        script.write(os.linesep.join(lines))
+
+    # mirror    
+    cmd = ['lftp', '-d', '-f', script.name]
+    sync = Popen(cmd, stdout=PIPE, stderr={True:STDOUT, False:None}[args.quiet])
+    # end mirroring
+
+    log.list('lftp output', ''.join(sync.stdout.readlines()))
+
+    # compress the dir and create a .gz file with date
+    if not args.reverse and not args.no_compress:
+        notify('Compressing folder...', 'info')
+        log.list('Rotate compressed copies', compress(local))
+    # end compress
+
+    size = bes_unit_size(get_size(os.path.join(local, '..')))
+    log.block('Disk space used', '{0:>76.2f} {1}'.format(size['s'], size['u']))
+    log.time('End Time')
+    log.free(os.linesep * 2)
+    log.write(True)
+
+    os.remove(script.name)
+
+
+def parse_parms(*parms):
+    """Parse parameters from script or config file to shell format."""
+    parameters = ("shell {0} {1} {2} {3} {4} {5} {6}".
+                 format(parms[0], '-p {0}'.format(parms[1]) if parms[1] else '',
+                        parms[2], parms[3], '-l {0}'.format(parms[4]) if
+                        parms[4] else '', base64.b64decode(parms[5]), parms[6]))
+    return parameters.split()
 
 def main():
-    """Main section"""
+    """Main sect"""
 
 #===============================================================================
 # SCRIPT PARAMATERS TO EXECUTE THE SCRIPT AS A PROGRAMMED TASK
 #===============================================================================
 
     # ftp user name ('user' by default)
-    script_user = 'user'
+    cron_user = 'user'
     # ftp password, with a minimum security measure, encoded by base64
     # ('password' by default)
-    script_password = base64.b64decode('cGFzc3dvcmQ=')
+    cron_pass = 'cGFzc3dvcmQ='
     # ftp server, name or ip ('localhost' by default)
-    script_site = 'localhost'
+    cron_site = 'localhost'
+    # ftp server port. ('' by default)
+    cron_port = ''
     # ftp directory
-    script_ftp_dir = 'directory'
+    cron_remote = 'directory'
     # local directory
-    script_local_dir = '/your/path/to/your/local/directory/'
+    cron_local = '/your/path/to/your/local/directory/'
+    # options, same as the shell mode. See shell mode help for more info
+    cron_options = ''
 
 #===============================================================================
 # END PARAMETERS
 #===============================================================================
 
-    # first, parse the options & arguments
-    (opts, args) = options().parse_args()
-
-    # this script can be executed in two ways:
-    #
-    #    a) interactive
-    #    b) as a programmed task
-    #
-    # In the first way, you need to give the args (site, remote FTP dir and
-    # local dir) to the script in the command line. Options, obviously, are
-    # optional.
-    #
-    # As a programmed task, don't need the args. Takes the scripts variables
-    # (previously defined) as default args. Also takes user and password options
-    # from the script variables. The other options are optional.
-
-    # set the args and some options for the two ways
-    if not args:
-        site = script_site
-        ftp_dir = script_ftp_dir
-        local_dir = os.path.normpath(script_local_dir)
-        user_pass = '{0} {1}'.format(script_user, script_password)
-    else:
-        site = args[0]
-        ftp_dir = args[1]
-        local_dir = os.path.normpath(args[2])
-        user_pass = '{0} {1}'.format(opts.user, opts.password)
-
-
-    user = {True:'', False:user_pass}[opts.anonymous]
-    protocol = '{0}ftp'.format(opts.secure)
-    verbose = {True:STDOUT, False:None}[opts.quiet]
-    # end
-
-    # changes to the local dir
-    os.chdir('{0}/..'.format(local_dir))
+    # first, parse the arguments
+    args = arguments().parse_args()
 
     # initalize the log
     log = Logger()
 
-    # log the header
-    url = 'http://code.joedicastro.com/lftp-mirror'
-    msg = 'connected to {0}{1}Mirror {2} to {3}'.format(site, os.linesep,
-                                                        ftp_dir, local_dir)
-    log.header(url, msg)
-
-    # log Start Time
-    log.time('Start time')
-
-    notify('Mirroring with {0}...'.format(script_site), 'sync')
-
-    # create the script file to import with lftp
-    sc_opts = ('-vvv' + opts.erase + opts.newer + opts.parallel + opts.reverse +
-               opts.del_first + opts.depth_first + opts.no_empty +
-               opts.no_recursion + opts.dry_run + opts.cache + opts.del_source +
-               opts.missing + opts.existing + opts.loop + opts.size + opts.time
-               + opts.perms + opts.umask + opts.symlinks + opts.suid +
-               opts.chown + opts.dereference)
-
-    with open('ftpscript', 'w') as script:
-        script.write('open {0}://{1}{2}'.format(protocol, site, os.linesep))
-        script.write('user {0}{1}'.format(user, os.linesep))
-        script.write('mirror {0} {1} {2}{3}'.format(sc_opts, ftp_dir, local_dir,
-                                                    os.linesep))
-        script.write('exit{0}'.format(os.linesep))
-    # end
-
-    # mirror the directories
-    cmd = ['lftp', '-d', '-f', script.name]
-    sync = Popen(cmd, stdout=PIPE, stderr=verbose)
-    # end mirroring
-
-    # adds the lftp output to the log
-    result = sync.stdout.readlines()
-    lftp_log = ''
-    for line in result:
-        lftp_log += line
-    log.list('lftp output', lftp_log)
-    # end
-
-    # compress the dir and create a .gz file with date
-    if not opts.reverse and not opts.no_compress:
-        notify('Compressing folder...', 'info')
-        log.list('Rotate compressed copies', compress(local_dir))
-    # end compress
-
-    log.time('End Time')
-    size = bes_unit_size(get_size(os.path.join(local_dir, '..')))
-    log.block('Disk space used', '{0:>76.2f} {1}'.format(size['s'], size['u']))
+    # set the arguments depending of execution mode
+    if args.cron:
+        args = arguments().parse_args(parse_parms(cron_site,
+                                                  cron_port,
+                                                  cron_remote,
+                                                  cron_local,
+                                                  cron_user,
+                                                  cron_pass,
+                                                  cron_options))
+        mirror(args, log)
+    elif args.cfg:
+        cfg = SafeConfigParser()
+        cfg.read(args.config_file)
+        for sect in cfg.sections():
+            args = arguments().parse_args(parse_parms(cfg.get(sect, 'site'),
+                                                      cfg.get(sect, 'port'),
+                                                      cfg.get(sect, 'remote'),
+                                                      cfg.get(sect, 'local'),
+                                                      cfg.get(sect, 'user'),
+                                                      cfg.get(sect, 'password'),
+                                                      cfg.get(sect, 'options')))
+            mirror(args, log)
+    else:
+        mirror(args, log)
 
     # send the log by mail and write the log file
-    if not opts.no_email:
-        log.send('FTP Sync')
-    log.write(True)
-
-    # remove the script file
-    os.remove(script.name)
+    if not args.no_email:
+        log.send('FTP Sync', send_from=args.from_addr, dest_to=args.to_addrs,
+                 mail_server=args.smtp_server, server_user=args.smtp_user,
+                 server_pass=args.smtp_pass)
 
     notify('Ended Ok', 'ok')
 
 if __name__ == "__main__":
     check_execs_posix_win('lftp') # Check first if lftp is installed
     main()
-
