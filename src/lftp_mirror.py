@@ -60,7 +60,7 @@
 __author__ = "joe di castro - joe@joedicastro.com"
 __license__ = "GNU General Public License version 3"
 __date__ = "23/11/2010"
-__version__ = "0.5"
+__version__ = "0.6"
 
 try:
     import sys
@@ -104,15 +104,17 @@ class Logger():
     """
 
     def __init__(self):
-        """Create the object Logger itself and set a variable.
+        """Create the object Logger itself and set two variables.
 
         This variable is about this python file:
 
         __script_name = The script name
+        filename = the log file's name
 
         """
         self.__log = ''
         self.__script_name = os.path.basename(__file__).split('.')[0]
+        self.filename = '{0}.log'.format(self.__script_name)
 
     def __len__(self):
         return len(self.__log)
@@ -287,8 +289,9 @@ class Logger():
 
         """
         mode = 'ab' if append else 'wb'
-        with open('{0}.log'.format(self.__script_name), mode) as log_file:
+        with open(self.filename, mode) as log_file:
             log_file.write(self.__log)
+
 
 def arguments():
     """Defines the command line arguments for the script."""
@@ -613,7 +616,10 @@ def mirror(args, log):
         log.list('Rotate compressed copies', compress(local))
     # end compress
 
-    size = bes_unit_size(get_size(os.path.join(local, '..')))
+    gz_size = sum([get_size(gz) for gz in glob.glob('{0}*.gz'.format(local))])
+    log_size = get_size(log.filename)
+    local_size = get_size(local)
+    size = bes_unit_size(local_size + gz_size + log_size)
     log.block('Disk space used', '{0:>76.2f} {1}'.format(size['s'], size['u']))
     log.time('End Time')
     log.free(os.linesep * 2)
