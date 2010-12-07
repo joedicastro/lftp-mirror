@@ -59,8 +59,8 @@
 
 __author__ = "joe di castro - joe@joedicastro.com"
 __license__ = "GNU General Public License version 3"
-__date__ = "23/11/2010"
-__version__ = "0.6"
+__date__ = "07/12/2010"
+__version__ = "0.7"
 
 try:
     import sys
@@ -432,6 +432,14 @@ def arguments():
     shell.add_argument("--dereference", action="store_const",
                       const=" --dereference", dest="dereference", default="",
                       help="download symbolic links as files")
+    shell.add_argument("--exclude-glob", dest="exc_glob", default="",
+                       metavar="GP",
+                       help="exclude matching files. GP is a glob pattern, e.g."
+                       " '*.zip'")
+    shell.add_argument("--include-glob", dest="inc_glob", default="",
+                       metavar="GP",
+                       help="include matching files. GP is a glob pattern, e.g."
+                       " '*.zip'")
 
     shell.add_argument("-q", "--quiet", action="store_true", dest="quiet",
                        help="the detailed shell process is no "
@@ -570,6 +578,8 @@ def mirror(args, log):
     user = '' if args.anonymous else ' '.join(args.login)
     local, remote = os.path.normpath(args.local), os.path.normpath(args.remote)
     port = '-p {0}'.format(args.port) if args.port else ''
+    include = ' --include-glob {0}'.format(args.inc_glob) if args.inc_glob else ''
+    exclude = ' --exclude-glob {0}'.format(args.exc_glob) if args.exc_glob else ''
 
     url = 'http://code.joedicastro.com/lftp-mirror'
     msg = 'Connected to {1} as {2}{0}'.format(os.linesep, args.site, 'anonymous'
@@ -592,7 +602,8 @@ def mirror(args, log):
                 args.no_recursion + args.dry_run + args.use_cache +
                 args.del_source + args.missing + args.existing + args.loop +
                 args.size + args.time + args.no_perms + args.no_umask +
-                args.no_symlinks + args.suid + args.chown + args.dereference)
+                args.no_symlinks + args.suid + args.chown + args.dereference +
+                exclude + include)
 
     with open('ftpscript', 'w') as script:
         lines = ('open {0}ftp://{1} {2}'.format(args.secure, args.site, port),
