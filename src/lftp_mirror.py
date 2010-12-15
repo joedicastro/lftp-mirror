@@ -59,8 +59,8 @@
 
 __author__ = "joe di castro - joe@joedicastro.com"
 __license__ = "GNU General Public License version 3"
-__date__ = "07/12/2010"
-__version__ = "0.7"
+__date__ = "15/12/2010"
+__version__ = "0.8"
 
 try:
     import sys
@@ -317,9 +317,11 @@ def arguments():
                 "mirror action with no limits in the number of sections.{0}{0}"
                 "Values between curly brackets '{{}}' are required arguments "
                 "and values between brackets '()' are optional arguments. If "
-                "don't want optional arguments, left them blank.{0}{0}The order"
-                " of arguments doesn't matter, but all are needed.{0}{0}"
-                " ").format(os.linesep)
+                "don't want optional arguments, left them blank. In case you do"
+                " not specify a username and password, you must add the '-a' "
+                "option which specifies that the connection is made with the "
+                "anonymous user.{0}{0}The order of arguments doesn't matter, "
+                "but all are needed.{0}{0}").format(os.linesep)
 
     parser = ArgumentParser(description=main_desc, epilog=epilog)
     subparsers = parser.add_subparsers(title="running modes",
