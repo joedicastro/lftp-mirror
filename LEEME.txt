@@ -124,7 +124,7 @@ Este script emplea varios módulos que están presentes en la biblioteca estánd
 de python.
 
 La versión de python necesaria para ejecutar el script es la 2.7. Ahora bien, es
-posible correr el script en la version 2.6 si instalamos el modulo argparse, que
+posible correr el script en la versión 2.6 si instalamos el modulo argparse, que
 se incorporó a la librería estándar en la versión 2.7.
  
 Instalar el modulo argparse en linux es sencillo, por ejemplo en Debian ó Ubuntu
@@ -208,7 +208,7 @@ lftp_mirror.py cron
 
 * cfg
 
-Este modo es parecido al anterior, con la diferencia de que los parametros de 
+Este modo es parecido al anterior, con la diferencia de que los parámetros de 
 ejecución se toman desde un fichero externo y que permite la ejecución 
 consecutiva de varias operaciones de sincronización. Esto es ideal para ejecutar
 en una sola operación la sincronización de varios servidores de FTP/directorios.

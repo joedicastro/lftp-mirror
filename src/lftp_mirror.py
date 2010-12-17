@@ -59,8 +59,8 @@
 
 __author__ = "joe di castro - joe@joedicastro.com"
 __license__ = "GNU General Public License version 3"
-__date__ = "15/12/2010"
-__version__ = "0.8"
+__date__ = "17/12/2010"
+__version__ = "0.9"
 
 try:
     import sys
@@ -300,12 +300,12 @@ def arguments():
     subs_desc = "Select a running mode from the following:"
     epilog = ("For detailed help for each mode, select a mode followed by help "
               "option, e.g.:{0}{0}%(prog)s shell -h").format(os.linesep)
-    cron_use = "%(prog)s [options]"
+    cron_use = "%(prog)s [-h]"
     shell_use = ("%(prog)s site remote local [options]{0}{0}By default "
                  "downloads the changes from remote FTP directory to local "
                  "directory.{0}To upload changes from local to remote FTP, use "
                  "the 'r, --reverse' option").format(os.linesep)
-    file_use = ("%(prog)s config_file [options]{0}{0}The structure of the "
+    file_use = ("%(prog)s config_file [-h]{0}{0}The structure of the "
                 "config file (a simple text file) is as follows:{0}{0}[section]"
                 "{0}site = {{ftp server URL or IP}}{0}port = (ftp server port)"
                 "{0}remote = {{remote directory}}{0}local = {{local directory}}"
