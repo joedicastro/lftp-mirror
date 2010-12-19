@@ -59,7 +59,7 @@
 
 __author__ = "joe di castro - joe@joedicastro.com"
 __license__ = "GNU General Public License version 3"
-__date__ = "17/12/2010"
+__date__ = "19/12/2010"
 __version__ = "0.9"
 
 try:
@@ -417,10 +417,10 @@ def arguments():
                       help="ignore time when deciding whether to download")
     shell.add_argument("--no-perms", action="store_const",
                       const=" --no-perms", dest="no_perms", default="",
-                      help="don't set cfg permissions")
+                      help="don't set file permissions")
     shell.add_argument("--no-umask", action="store_const",
                       const=" --no-umask", dest="no_umask", default="",
-                      help="don't apply umask to cfg modes")
+                      help="don't apply umask to file modes")
     shell.add_argument("--no-symlinks", action="store_const",
                       const=" --no-symlinks", dest="no_symlinks", default="",
                       help="don't create symbolic links")
