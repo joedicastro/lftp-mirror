@@ -408,7 +408,7 @@ def arguments():
                       help="download only files already existing at target")
     shell.add_argument("--loop", action="store_const",
                       const=" --loop", dest="loop", default="",
-                      help="Loop until no changes found")
+                      help="loop until no changes found")
     shell.add_argument("--ignore-size", action="store_const",
                       const=" --ignore-size", dest="size", default="",
                       help="ignore size when deciding whether to download")
