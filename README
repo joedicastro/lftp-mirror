@@ -31,7 +31,7 @@ Since default lftp supports the use of scripts to automate ftp and programming
 tasks automatically through cron is trivial, which is the need to create a 
 script like this?
 
-Well, this script provides certain advantages over just using lftp:
+**Well, this script provides certain advantages over just using lftp:**
 
 * Provides a detailed activity log on disk that is human readable and can be 
   emailed to one or more directions, either through a local mail server or an
@@ -149,8 +149,8 @@ If you run the program without arguments shows an error message:
     usage: lftp_mirror.py [-h] [-v] {cron,cfg,shell} ...
     lftp_mirror.py: error: too few arguments
 
-That would mean that we need to employ at least some of these arguments (cron, 
-cfg or shell) or options (-h or-v).
+That would mean that we need to employ at least some of these arguments: *cron*, 
+*cfg* or *shell* or options: *-h* or *-v*
 
 These three arguments will be defining the manner of execution of the script, as
 we mentioned in the introduction.
@@ -324,7 +324,7 @@ REPOSITORY
 The code is hosted in a Mercurial (hg) repository at BitBucket, use this to get
 a clone:
 
-     hg clone http://bitbucket.org/joedicastro/lftp-mirror
+    hg clone http://bitbucket.org/joedicastro/lftp-mirror
 
 
 FEATURES
@@ -452,9 +452,9 @@ CONTRIBUTION
 ------------
 
 To contribute to the improvement and development of these scripts, you can send
-suggestions or bugs via this link,
+suggestions or bugs via this [link] 
 
-http://bitbucket.org/joedicastro/lftp-mirror/issues/new
+[link]:http://bitbucket.org/joedicastro/lftp-mirror/issues/new
 
 If this code has proven useful to you and you consider it appropriate, you can
 also make a small donation at
