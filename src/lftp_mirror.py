@@ -59,8 +59,8 @@
 
 __author__ = "joe di castro - joe@joedicastro.com"
 __license__ = "GNU General Public License version 3"
-__date__ = "19/12/2010"
-__version__ = "0.9"
+__date__ = "30/12/2010"
+__version__ = "0.10"
 
 try:
     import sys
@@ -529,32 +529,33 @@ def notify(msg, status):
     note.set_icon_from_pixbuf(icon)
     note.show()
 
-def bes_unit_size(f_size):
-    """Get a size in bytes and convert it for the best unit for readability.
+def best_unit_size(bytes_size):
+    """Get a size in bytes & convert it to the best IEC prefix for readability.
 
-    Return two values:
+    Return a dictionary with three pair of keys/values:
 
-    (int) bu_size -- Size of the path converted to the best unit for easy read
-    (str) unit -- The units (IEC) for bu_size (from bytes(2^0) to YiB(2^80))
+    's' -- (float) Size of path converted to the best unit for easy read
+    'u' -- (str) The prefix (IEC) for s (from bytes(2^0) to YiB(2^80))
+    'b' -- (int / long) The original size in bytes
 
     """
     for exp in range(0, 90 , 10):
-        bu_size = f_size / pow(2.0, exp)
+        bu_size = abs(bytes_size) / pow(2.0, exp)
         if int(bu_size) < 2 ** 10:
             unit = {0:'bytes', 10:'KiB', 20:'MiB', 30:'GiB', 40:'TiB', 50:'PiB',
                     60:'EiB', 70:'ZiB', 80:'YiB'}[exp]
             break
-    return {'s':bu_size, 'u':unit}
+    return {'s':bu_size, 'u':unit, 'b':bytes_size}
 
 def get_size(the_path):
     """Get size of a directory tree or a file in bytes."""
     path_size = 0
-    if os.path.isfile(the_path):
-        path_size = os.path.getsize(the_path)
-    for path, dirs, files in os.walk(the_path):
-        for fil in files:
-            filename = os.path.join(path, fil)
-            path_size += os.path.getsize(filename)
+    for path, directories, files in os.walk(the_path):
+        for filename in files:
+            path_size += os.lstat(os.path.join(path, filename)).st_size
+        for directory in directories:
+            path_size += os.lstat(os.path.join(path, directory)).st_size
+    path_size += os.path.getsize(the_path)
     return path_size
 
 def compress(path):
@@ -630,9 +631,9 @@ def mirror(args, log):
     # end compress
 
     gz_size = sum([get_size(gz) for gz in glob.glob('{0}*.gz'.format(local))])
-    log_size = get_size(log.filename)
+    log_size = get_size(log.filename) if os.path.exists(log.filename) else 0
     local_size = get_size(local)
-    size = bes_unit_size(local_size + gz_size + log_size)
+    size = best_unit_size(local_size + gz_size + log_size)
     log.block('Disk space used', '{0:>76.2f} {1}'.format(size['s'], size['u']))
     log.time('End Time')
     log.free(os.linesep * 2)
