@@ -59,8 +59,8 @@
 
 __author__ = "joe di castro - joe@joedicastro.com"
 __license__ = "GNU General Public License version 3"
-__date__ = "30/12/2010"
-__version__ = "0.10"
+__date__ = "12/05/2011"
+__version__ = "0.11"
 
 try:
     import sys
@@ -372,9 +372,10 @@ def arguments():
     shell.add_argument("-n", "--newer", action="store_const", const="n",
                       dest="newer", default="",
                       help="download only newer files")
-    shell.add_argument("-P", "--parallel", action="store_const", const="P",
-                      dest="parallel", default="",
-                      help="download files in parallel")
+    shell.add_argument("-P", "--parallel", dest="parallel", default="",
+                       nargs="?", metavar="N", const=2,
+                       help="download N files in parallel. N=2 if not provide "
+                       "any value")
     shell.add_argument("-r", "--reverse", action="store_const", const="R",
                       dest="reverse", default="",
                       help="reverse, upload files from local to remote")
@@ -583,6 +584,7 @@ def mirror(args, log):
     port = '-p {0}'.format(args.port) if args.port else ''
     include = ' --include-glob {0}'.format(args.inc_glob) if args.inc_glob else ''
     exclude = ' --exclude-glob {0}'.format(args.exc_glob) if args.exc_glob else ''
+    parallel = ' --parallel={0}'.format(args.parallel) if args.parallel else ''
 
     url = 'http://code.joedicastro.com/lftp-mirror'
     msg = 'Connected to {1} as {2}{0}'.format(os.linesep, args.site, 'anonymous'
@@ -600,13 +602,13 @@ def mirror(args, log):
     os.chdir(os.path.join(local, os.pardir))
 
     # create the script file to import with lftp
-    scp_args = ('-vvv' + args.erase + args.newer + args.parallel + args.reverse
+    scp_args = ('-vvv' + args.erase + args.newer + args.reverse
                 + args.del_first + args.depth_first + args.no_empty_dir +
                 args.no_recursion + args.dry_run + args.use_cache +
                 args.del_source + args.missing + args.existing + args.loop +
                 args.size + args.time + args.no_perms + args.no_umask +
                 args.no_symlinks + args.suid + args.chown + args.dereference +
-                exclude + include)
+                exclude + include + parallel)
 
     with open('ftpscript', 'w') as script:
         lines = ('open {0}ftp://{1} {2}'.format(args.secure, args.site, port),
