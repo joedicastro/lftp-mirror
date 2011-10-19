@@ -59,8 +59,8 @@
 
 __author__ = "joe di castro - joe@joedicastro.com"
 __license__ = "GNU General Public License version 3"
-__date__ = "12/05/2011"
-__version__ = "0.11"
+__date__ = "19/10/2011"
+__version__ = "0.12"
 
 try:
     import sys
@@ -230,7 +230,7 @@ class Logger():
         mailbox is assumed instead. Useful for loggin scripts
 
         """
-        local_email = '@'.join([os.getenv('LOGNAME'), socket.gethostname()])
+        local_email = '@'.join([os.getlogin(), socket.gethostname()])
         if not send_from:
             send_from = local_email
         if not dest_to:
