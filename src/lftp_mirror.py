@@ -60,7 +60,7 @@
 __author__ = "joe di castro - joe@joedicastro.com"
 __license__ = "GNU General Public License version 3"
 __date__ = "19/10/2011"
-__version__ = "0.12"
+__version__ = "0.13"
 
 try:
     import sys
@@ -73,9 +73,11 @@ try:
     import platform
     import socket
     import smtplib
+    import getpass
     from argparse import ArgumentParser, SUPPRESS
     from ConfigParser import SafeConfigParser
     from subprocess import Popen, PIPE, STDOUT
+    from email.mime.base import MIMEBase
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
     from email.utils import COMMASPACE, formatdate
@@ -230,7 +232,7 @@ class Logger():
         mailbox is assumed instead. Useful for loggin scripts
 
         """
-        local_email = '@'.join([os.getlogin(), socket.gethostname()])
+        local_email = '@'.join([getpass.getuser(), socket.gethostname()])
         if not send_from:
             send_from = local_email
         if not dest_to:
