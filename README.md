@@ -127,7 +127,6 @@ distributions, for example to install in Debian/Ubuntu:
     $ sudo apt-get install lftp
 
 
-
 ## INSTRUCTIONS
 
 This is a script designed to work in the command line, given the nature of their
