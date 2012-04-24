@@ -1,11 +1,8 @@
-﻿<!-- -*- markdown -*- -->
-
-LFTP MIRROR
-===========
+﻿# LFTP MIRROR
 
 It's a python script that allow us to synchronize a directory on a remote server
 with a local directory via FTP. For this purpose makes use of the great program
-'lftp' by Alexander V. Lukyanov (http://lftp.yar.ru/), which is indispensable 
+'lftp' by [Alexander V. Lukyanov](http://lftp.yar.ru/), which is indispensable 
 to run this script.
 
 Sometimes we need to keep two directories synced, one on a remote server and 
@@ -31,7 +28,7 @@ Since default lftp supports the use of scripts to automate ftp and programming
 tasks automatically through cron is trivial, which is the need to create a 
 script like this?
 
-**Well, this script provides certain advantages over just using lftp:**
+Well, this script provides certain advantages over just using lftp:
 
 * Provides a detailed activity log on disk that is human readable and can be 
   emailed to one or more directions, either through a local mail server or an
@@ -76,35 +73,31 @@ script like this?
   a weak security measure, but is the least that should be considered. 
 
 
-FILES
------
 
+## FILES
 
-* lftp_mirror.py
+* `lftp_mirror.py`
 
  The script file
 
-* sample.cfg
+* `sample.cfg`
 
  A configuration file's example
- 
-* License.txt
+
+* `License.txt`
 
  The GPLv3 license text
 
-* LEEME.txt
+* `LEEME.txt`
 
  This file in Spanish
 
-* README.txt
+* `README.txt`
 
  This file
 
 
-
-PRE-REQUISITES & DEPENDENCIES
------------------------------
-
+## PRE-REQUISITES & DEPENDENCIES
 
 ### For Linux (not tested in Mac):
 
@@ -135,8 +128,7 @@ distributions, for example to install in Debian/Ubuntu:
 
 
 
-INSTRUCTIONS
-------------
+## INSTRUCTIONS
 
 This is a script designed to work in the command line, given the nature of their
 function, which is simply to automate a process that once started does not 
@@ -272,7 +264,141 @@ Although it could be summarized in this command line:
 
 Where *site* is the FTP server, *remote* the remote directory and *local* the 
 local directory. *user* and *password* are the FTP server's user and password. 
-The other options is extensive, so it's better refer to script's built-in help.
+
+The set of arguments and options are detailed below:
+
+#### Shell mode arguments:
+
+* `site` 
+
+ The FTP Server, can be set as an URL or IP address
+
+* `remote`
+
+ Remote directory at FTP Server                    
+
+* `local` 
+
+ Local directory                                   
+
+
+#### Lftp options available in shell mode:
+
+* `-h, --help`
+
+ Show this mode help
+ 
+* `-l user password, --login user password`
+
+ The ftp account's username and password
+
+* `-a, --anon`
+ 
+ Set user as anonymous
+
+* `-p port, --port port`
+
+ To specify a different port to standard FTP (21)
+
+* `-s, --secure`
+
+ Establishes a secure connection via SFTP instead of FTP
+
+* `-e, --erase`
+
+ Delete files in target that are no longer available at source
+ 
+* `-n, --newer`
+
+ Download only newer files
+
+* `-P [N], --parallel [N]`
+
+ Download N files in parallel, using multiple FTP connections simultaneously. N=2 if not provide any value
+
+* `-r, --reverse`
+
+ Reverse mode. Upload files from local to remote
+
+* `--delete-first`
+
+ Delete old files before transferring new ones
+
+* `--depth-first`
+
+ Descend into subdirectories, before transfer files
+
+* `--no-empty-dirs`
+
+ Do not creates in destiny empty directories that may exist in origin. Needs the `--depth-first` option
+
+* `--no-recursion`
+
+ Don't go to subdirectories
+
+* `--dry-run` 
+
+ Simulation, don't execute anything. Writes to log
+
+* `--use-cache`
+
+ Use cached directory listings
+
+* `--del-source`
+
+ Delete files (not directories) in origin after transfer. **CAUTION!**
+
+* `--only-missing`
+
+ Download only missing files
+
+* `--only-existing`
+
+ Download only files already existing at target
+
+* `--loop`
+
+ Loop until no changes found
+
+* `-ignore-size`
+
+ Ignore size when deciding whether to download
+ 
+* `--ignore-time`
+
+ Ignore time when deciding whether to Download
+
+* `--no-perms`
+
+ Don't set file permissions
+
+* `--no-umask`
+
+ Don't apply umask to file modes
+
+* `--no-symlinks`
+
+ Don't create symbolic links
+
+* `--allow-suid`
+
+ Set suid/sgid bits according to remote site
+
+* `--allow-chown`
+
+ Try to set owner and group on files
+
+* `--dereference`
+
+ Download symbolic links as files
+
+* `--exclude-glob GP`
+
+ Exclude files that matcht the pattern. Where GP is a glob pattern, for example: `*. zip `
+
+* `--include-glob GP`
+
+ Include files that matcht the pattern. Where GP is a glob pattern, for example: `*. zip `
 
 
 #### Script options that are not present in lftp:
@@ -317,18 +443,19 @@ other(s) recipient(s), then it is necessary to use the following options:
  The email address(es) of who we want to send mail
 
 
-
-REPOSITORY
-----------
+## REPOSITORY
 
 The code is hosted in a Mercurial (hg) repository at BitBucket, use this to get
 a clone:
 
     hg clone http://bitbucket.org/joedicastro/lftp-mirror
 
+Also is hosted in a Git repository at GitHub, use this to get a clone:
 
-FEATURES
---------
+    git clone git://github.com/joedicastro/lftp-mirror.git
+
+
+## FEATURES
 
 Every time you complete a execution record is added to the log file that is 
 created in the local root folder and if not indicated otherwise send an email 
@@ -446,34 +573,34 @@ this e-mail sent after running the sample configuration file, sample.cfg:
                                                     wednesday 08/12/10, 13:52:13
     ============================================================================
 
+## ALTERNATIVES
 
 
-CONTRIBUTION
-------------
+If my script do not match what you want, here's a summary of alternatives for 
+UNIX/Linux (which I know). Mine included as reference.
 
-To contribute to the improvement and development of these scripts, you can send
-suggestions or bugs via this [link](http://bitbucket.org/joedicastro/lftp-mirror/issues/new)
+|Program|Language|Type|Features|Site|License|Author(s)|
+|-------|--------|----|--------|----|-------|---------|
+|**lftp-mirror**|Python|script|The above mentioned|http://code.joedicastro.com/lftp-mirror|GPLv3|Me|
+|lftp|C++|shell app|Light, fast and powerful. Perhaps the best FTP client available for the command line. Full of options and very versatile |http://lftp.yar.ru|GPLv3|Alexander V. Lukyanov|
+|wget -m|C|shell app|Only works in one direction: local to remote|http://www.gnu.org/software/wget|GPLv3|Hrvoje Nikšić, Mauro Tortonesi, Steven Schubiger, Micah Cowan, Giuseppe Scrivano|
+|csync|C|shell app|Bidirectional but only works with sftp. Not as configurable as lftp|http://www.csync.org|GPLv2|Andreas Schneider|
+|weex|C|shell app|Only works in one direction: local to remote|http://weex.sourceforge.net/|GPLv2|Yuuki Ninomiya, Ludovic Drolez|
+|ftpsync|Perl|script|Bidirectional, does not support sftp. Without many options as lftp|http://sourceforge.net/projects/ftpsync|GPLv2|Christoph Lechleitner|
+|ncftp|C|shell app|Bidirectional. A little messy.|http://www.ncftp.com/ncftp|Clarified Artistic License|Mike Gleason|
+|curlftpfs + rsync|C|shell app|Curlftpfs used to mount a local file system pointed to the FTP server and then used rsync to synchronize|//curlftpfs//:\\http://curlftpfs.sourceforge.net \\//rsync//:\\ http://rsync.samba.org|//curlftpfs//:\\GPLv2 \\ //rsync//:\\GPLv3|//curlftpfs//:\\ Robson Braga Araujo \\ //rsync//:\\Andrew Tridgell, Paul Mackerras, Wayne Davison|
 
-If this code has proven useful to you and you consider it appropriate, you can
-also make a small [donation](http://joedicastro.bitbucket.org/)
 
-LICENSE
--------
 
-All of code are distributed under the terms of the GPLv3 license
+## CONTRIBUTION
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+Contributions and Feedback are most welcome.
+To contribute to the improvement and development of this scripts, you can send 
+suggestions or bugs via the issues.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+## LICENSE
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+The script is distributed under the terms of the 
+[GPLv3 license](http://www.gnu.org/licenses/gpl.html)
 
 ###### *Apologies for any misspelling or syntax error, English isn't my mother tongue.*
