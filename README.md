@@ -579,17 +579,69 @@ this e-mail sent after running the sample configuration file, sample.cfg:
 If my script do not match what you want, here's a summary of alternatives for 
 UNIX/Linux (which I know). Mine included as reference.
 
-|Program|Language|Type|Features|Site|License|Author(s)|
-|-------|--------|----|--------|----|-------|---------|
-|**lftp-mirror**|Python|script|The above mentioned|http://code.joedicastro.com/lftp-mirror|GPLv3|Me|
-|lftp|C++|shell app|Light, fast and powerful. Perhaps the best FTP client available for the command line. Full of options and very versatile |http://lftp.yar.ru|GPLv3|Alexander V. Lukyanov|
-|wget -m|C|shell app|Only works in one direction: local to remote|http://www.gnu.org/software/wget|GPLv3|Hrvoje Nikšić, Mauro Tortonesi, Steven Schubiger, Micah Cowan, Giuseppe Scrivano|
-|csync|C|shell app|Bidirectional but only works with sftp. Not as configurable as lftp|http://www.csync.org|GPLv2|Andreas Schneider|
-|weex|C|shell app|Only works in one direction: local to remote|http://weex.sourceforge.net/|GPLv2|Yuuki Ninomiya, Ludovic Drolez|
-|ftpsync|Perl|script|Bidirectional, does not support sftp. Without many options as lftp|http://sourceforge.net/projects/ftpsync|GPLv2|Christoph Lechleitner|
-|ncftp|C|shell app|Bidirectional. A little messy.|http://www.ncftp.com/ncftp|Clarified Artistic License|Mike Gleason|
-|curlftpfs + rsync|C|shell app|Curlftpfs used to mount a local file system pointed to the FTP server and then used rsync to synchronize|//curlftpfs//:\\http://curlftpfs.sourceforge.net \\//rsync//:\\ http://rsync.samba.org|//curlftpfs//:\\GPLv2 \\ //rsync//:\\GPLv3|//curlftpfs//:\\ Robson Braga Araujo \\ //rsync//:\\Andrew Tridgell, Paul Mackerras, Wayne Davison|
+* **lftp-mirror**
 
+ - Language: Python
+ - Type: script
+ - Features: The above mentioned
+ - License: GPLv3
+ - Author(s): Me 
+
+* [lftp](http://lftp.yar.ru)
+
+ - Language: C++
+ - Type: shell app
+ - Features: Light, fast and powerful. Perhaps the best FTP client available for the command line. Full of options and very versatile 
+ - License: GPLv3
+ - Author(s): Alexander V. Lukyanov
+
+* [wget -m](http://www.gnu.org/software/wget)
+
+ - Language: C
+ - Type: shell app
+ - Features: Only works in one direction: local to remote
+ - License: GPLv3
+ - Author(s): Hrvoje Nikšić, Mauro Tortonesi, Steven Schubiger, Micah Cowan, Giuseppe Scrivano
+
+* [csync](http://www.csync.org)
+
+ - Language: C
+ - Type: shell app
+ - Features: Bidirectional but only works with sftp. Not as configurable as lftp
+ - License: GPLv2
+ - Author(s): Andreas Schneider
+
+* [weex](http://weex.sourceforge.net/)
+
+ - Language: C
+ - Type: shell app
+ - Features: Only works in one direction: local to remote
+ - License: GPLv2 
+ - Author(s): Yuuki Ninomiya, Ludovic Drolez
+
+* [ftpsync](http://sourceforge.net/projects/ftpsync)
+
+ - Language: Perl
+ - Type: script
+ - Features: Bidirectional, does not support sftp. Without many options as lftp 
+ - License: GPLv2
+ - Author(s): Christoph Lechleitner
+
+* [ncftp](http://www.ncftp.com/ncftp)
+
+ - Language: C
+ - Type: shell app
+ - Features: Bidirectional. A little messy.
+ - License: Clarified Artistic License
+ - Author(s): Mike Gleason
+
+* [curlftpfs](http://curlftpfs.sourceforge.net) + [rsync](http://rsync.samba.org)
+
+ - Language: C
+ - Type: shell app
+ - Features: Curlftpfs used to mount a local file system pointed to the FTP server and then used rsync to synchronize
+ - License: GPLv2 (curlftpfs) & GPLv3 (rsync)
+ - Author(s): Robson Braga Araujo (curlftpfs) & Andrew Tridgell, Paul Mackerras, Wayne Davison (rsync)
 
 
 ## CONTRIBUTION
