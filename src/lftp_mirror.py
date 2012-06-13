@@ -2,45 +2,45 @@
 # -*- coding: utf8 -*-
 
 """
-    lftp_mirror.py: This script mirrors a remote FTP server dir with a local dir
+   lftp_mirror.py: This script mirrors a remote FTP server dir with a local dir
 """
 
-#===============================================================================
+#==============================================================================
 # This Script mirrors a remote FTP server dir with a local dir (or vice versa)
 # and stores a daily compressed copy of local dir
 #
-# The real job is done by the marvelous lftp program by Alexander V. Lukyanov 
+# The real job is done by the marvelous lftp program by Alexander V. Lukyanov
 # and it's necessary to run this script
 # http://lftp.yar.ru/
 #
 # This script can be executed in three ways:
-#    
+#
 #   a) shell: command line interactive
 #   b) cron: as a programmed task
 #   c) cfg: importing arguments from a config file
-#    
-# In the first way, you need to give the required arguments (site, remote FTP 
+#
+# In the first way, you need to give the required arguments (site, remote FTP
 # directory and local directory) to the script in the command line. Optional
 # arguments, obviously, are optional.
-#    
+#
 # As a programmed task, don't need supply the arguments in the command line.
-# It takes the scripts parameters (previously defined) as default command line 
-# arguments. These defines the required and several optional arguments (which 
-# can left blank): user, password, port and options (the other). It's useful for
-# set up a cron programmed task with a single command line argument, 'cron'   
+# It takes the scripts parameters (previously defined) as default command line
+# arguments. These defines the required and several optional arguments (which
+# can left blank): user, password, port and options (the other). It's useful
+# for set up a cron programmed task with a single command line argument, 'cron'
 #
-# Finally, the last way is ideal for running multiple mirror operations. With a 
-# one configuration file can set up various mirror actions with different sites 
-# or directories, and do all of them in a single script execution. Arguments are
-# imported from this config file, with a section for each mirror operation, and 
-# there are not limits for sections.  
+# Finally, the last way is ideal for running multiple mirror operations. With a
+# one configuration file can set up various mirror actions with different sites
+# or directories, and do all of them in a single script execution. Arguments
+# are imported from this config file, with a section for each mirror operation,
+# and there are not limits for sections.
 #
-# For further information visits the lftp_mirror's website:  
+# For further information visits the lftp_mirror's website:
 #     http://code.joedicastro.com/lftp-mirror
 #
-#===============================================================================
+#==============================================================================
 
-#===============================================================================
+#==============================================================================
 #    Copyright 2010 joe di castro <joe@joedicastro.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -55,7 +55,7 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#===============================================================================
+#==============================================================================
 
 __author__ = "joe di castro - joe@joedicastro.com"
 __license__ = "GNU General Public License version 3"
@@ -87,14 +87,16 @@ except ImportError:
     str(sys.exc_info()[1]), "You need to install it", "Exit..."]))
     sys.exit(-2)
 
-# Notify it's not essential and libnotify it's not always installed (in Ubuntu &
-# Debian it's optional) but it's very useful to show operation's progress
+
+# Notify it's not essential and libnotify it's not always installed (in Ubuntu
+# & Debian it's optional) but it's very useful to show operation's progress
 try:
     import pynotify
     import gtk
     NOT_NOTIFY = False
 except ImportError:
     NOT_NOTIFY = True
+
 
 class Logger():
     """
@@ -131,8 +133,8 @@ class Logger():
         make the looks of self.block() and self.list()
 
         """
-        ending = {'=':'', '_':os.linesep}[decor]
-        end = {'=': '=' * 80, '_':''}[decor]
+        ending = {'=': '', '_': os.linesep}[decor]
+        end = {'=': '=' * 80, '_': ''}[decor]
         begin = ' '.join([tit.upper(), (80 - (len(tit) + 1)) * decor]) + ending
         cont = [cont] if isinstance(cont, str) else cont
         sep = os.linesep
@@ -238,7 +240,7 @@ class Logger():
         if not dest_to:
             dest_to = [local_email]
 
-        dest_to_addrs = COMMASPACE.join(dest_to) # receivers mails
+        dest_to_addrs = COMMASPACE.join(dest_to)  # receivers mails
         message = MIMEMultipart()
         message['Subject'] = '{0} - {1}'.format(subject,
                                                 time.strftime('%A %x, %X'))
@@ -297,16 +299,16 @@ class Logger():
 
 def arguments():
     """Defines the command line arguments for the script."""
-    main_desc = ("Mirror a remote FTP directory into a local directory or vice "
-                 "versa through the lftp program")
+    main_desc = ("Mirror a remote FTP directory into a local directory or vice"
+                 " versa through the lftp program")
     subs_desc = "Select a running mode from the following:"
-    epilog = ("For detailed help for each mode, select a mode followed by help "
-              "option, e.g.:{0}{0}%(prog)s shell -h").format(os.linesep)
+    epilog = ("For detailed help for each mode, select a mode followed by help"
+              " option, e.g.:{0}{0}%(prog)s shell -h").format(os.linesep)
     cron_use = "%(prog)s [-h]"
     shell_use = ("%(prog)s site remote local [options]{0}{0}By default "
                  "downloads the changes from remote FTP directory to local "
-                 "directory.{0}To upload changes from local to remote FTP, use "
-                 "the 'r, --reverse' option").format(os.linesep)
+                 "directory.{0}To upload changes from local to remote FTP, use"
+                 " the 'r, --reverse' option").format(os.linesep)
     file_use = ("%(prog)s config_file [-h]{0}{0}The structure of the "
                 "config file (a simple text file) is as follows:{0}{0}[section]"
                 "{0}site = {{ftp server URL or IP}}{0}port = (ftp server port)"
@@ -471,6 +473,7 @@ def arguments():
                         help="show program's version number and exit")
     return parser
 
+
 def check_execs_posix_win(*progs):
     """Check if the programs are installed.
 
@@ -510,6 +513,7 @@ def check_execs_posix_win(*progs):
                 not_found(prog)
     return windows_paths, is_windows
 
+
 def notify(msg, status):
     """Send notification status messages through libnotify.
 
@@ -525,12 +529,13 @@ def notify(msg, status):
         pynotify.init('lftp_mirror')
     note = pynotify.Notification("LFTP Mirror", msg)
     helper = gtk.Button()
-    icons = {'ok':gtk.STOCK_YES, 'info':gtk.STOCK_DIALOG_INFO,
-             'error':gtk.STOCK_DIALOG_ERROR, 'warm':gtk.STOCK_DIALOG_WARNING,
-             'ask':gtk.STOCK_DIALOG_QUESTION, 'sync':gtk.STOCK_JUMP_TO}
+    icons = {'ok': gtk.STOCK_YES, 'info': gtk.STOCK_DIALOG_INFO,
+             'error': gtk.STOCK_DIALOG_ERROR, 'warm': gtk.STOCK_DIALOG_WARNING,
+             'ask': gtk.STOCK_DIALOG_QUESTION, 'sync': gtk.STOCK_JUMP_TO}
     icon = helper.render_icon(icons[status], gtk.ICON_SIZE_BUTTON)
     note.set_icon_from_pixbuf(icon)
     note.show()
+
 
 def best_unit_size(bytes_size):
     """Get a size in bytes & convert it to the best IEC prefix for readability.
@@ -542,13 +547,14 @@ def best_unit_size(bytes_size):
     'b' -- (int / long) The original size in bytes
 
     """
-    for exp in range(0, 90 , 10):
+    for exp in range(0, 90, 10):
         bu_size = abs(bytes_size) / pow(2.0, exp)
         if int(bu_size) < 2 ** 10:
-            unit = {0:'bytes', 10:'KiB', 20:'MiB', 30:'GiB', 40:'TiB', 50:'PiB',
-                    60:'EiB', 70:'ZiB', 80:'YiB'}[exp]
+            unit = {0: 'bytes', 10: 'KiB', 20: 'MiB', 30: 'GiB', 40: 'TiB',
+                    50: 'PiB', 60: 'EiB', 70: 'ZiB', 80: 'YiB'}[exp]
             break
-    return {'s':bu_size, 'u':unit, 'b':bytes_size}
+    return {'s': bu_size, 'u': unit, 'b': bytes_size}
+
 
 def get_size(the_path):
     """Get size of a directory tree or a file in bytes."""
@@ -560,6 +566,7 @@ def get_size(the_path):
             path_size += os.lstat(os.path.join(path, directory)).st_size
     path_size += os.path.getsize(the_path)
     return path_size
+
 
 def compress(path):
     """Compress a local directory into a gz file.
@@ -577,6 +584,7 @@ def compress(path):
         os.remove(old_gz)
         output += os.linesep.join([os.linesep, 'Deleted old file:', '', old_gz])
     return output
+
 
 def mirror(args, log):
     """Mirror the directories."""
@@ -621,9 +629,10 @@ def mirror(args, log):
                 'exit')
         script.write(os.linesep.join(lines))
 
-    # mirror    
+    # mirror
     cmd = ['lftp', '-d', '-f', script.name]
-    sync = Popen(cmd, stdout=PIPE, stderr={True:STDOUT, False:None}[args.quiet])
+    sync = Popen(cmd, stdout=PIPE, stderr={True: STDOUT,
+                                           False: None}[args.quiet])
     # end mirroring
 
     log.list('lftp output', ''.join(sync.stdout.readlines()))
@@ -654,12 +663,13 @@ def parse_parms(*parms):
                         parms[4] else '', base64.b64decode(parms[5]), parms[6]))
     return parameters.split()
 
+
 def main():
     """Main sect"""
 
-#===============================================================================
+#==============================================================================
 # SCRIPT PARAMATERS TO EXECUTE THE SCRIPT AS A PROGRAMMED TASK
-#===============================================================================
+#==============================================================================
 
     # ftp user name ('user' by default)
     cron_user = 'user'
@@ -677,9 +687,9 @@ def main():
     # options, same as the shell mode. See shell mode help for more info
     cron_options = ''
 
-#===============================================================================
+#==============================================================================
 # END PARAMETERS
-#===============================================================================
+#==============================================================================
 
     # first, parse the arguments
     args = arguments().parse_args()
@@ -721,5 +731,5 @@ def main():
     notify('Ended Ok', 'ok')
 
 if __name__ == "__main__":
-    check_execs_posix_win('lftp') # Check first if lftp is installed
+    check_execs_posix_win('lftp')  # Check first if lftp is installed
     main()
