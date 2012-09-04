@@ -77,7 +77,6 @@ try:
     from argparse import ArgumentParser, SUPPRESS
     from ConfigParser import SafeConfigParser
     from subprocess import Popen, PIPE, STDOUT
-    from email.mime.base import MIMEBase
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
     from email.utils import COMMASPACE, formatdate
