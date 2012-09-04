@@ -83,7 +83,7 @@ try:
 except ImportError:
     # Checks the installation of the necessary python modules
     print((os.linesep * 2).join(["An error found importing one module:",
-    str(sys.exc_info()[1]), "You need to install it", "Exit..."]))
+          str(sys.exc_info()[1]), "You need to install it", "Exit..."]))
     sys.exit(-2)
 
 
@@ -198,7 +198,7 @@ class Logger():
         """A self.block() formated header for the log info.
 
         (str) url -- The url of the script
-        (str) msg -- Message to show into the header. To Provide any useful info
+        (str) msg -- Message to show into the header to Provide any useful info
 
         It looks like this:
 
@@ -330,9 +330,9 @@ def arguments():
     subparsers = parser.add_subparsers(title="running modes",
                                        description=subs_desc)
 
-    cron = subparsers.add_parser("cron", help="ideal to run as a scheduled task"
-                                 ". Takes arguments from parameters defined "
-                                 "within the script", usage=cron_use)
+    cron = subparsers.add_parser("cron", help="ideal to run as a scheduled "
+                                 "task. Takes arguments from parameters "
+                                 "defined within the script", usage=cron_use)
     cron.add_argument("cron", action="store_true", help=SUPPRESS,
                       default=SUPPRESS)
     cron.add_argument("cfg", action="store_false", help=SUPPRESS,
@@ -342,121 +342,126 @@ def arguments():
                                 "directories. Imports the arguments from a "
                                 "config file", usage=file_use)
     cfg.add_argument("cron", action="store_false", help=SUPPRESS,
-                      default=SUPPRESS)
+                     default=SUPPRESS)
     cfg.add_argument("cfg", action="store_true", help=SUPPRESS,
-                      default=SUPPRESS)
+                     default=SUPPRESS)
     cfg.add_argument("config_file", help="config file to import arguments")
 
     shell = subparsers.add_parser("shell", help="usual mode, takes arguments "
                                   "from the command line ", usage=shell_use)
     shell.add_argument("cron", action="store_false", help=SUPPRESS,
-                        default=SUPPRESS)
+                       default=SUPPRESS)
     shell.add_argument("cfg", action="store_false", help=SUPPRESS,
-                      default=SUPPRESS)
+                       default=SUPPRESS)
     shell.add_argument("site", help="the ftp server (URL or IP)")
     shell.add_argument("remote", help="the remote directory")
     shell.add_argument("local", help="the local directory")
 
     auth = shell.add_mutually_exclusive_group(required=True)
     auth.add_argument("-l", "--login", dest="login", nargs=2,
-                        help="the ftp account's username and password",
-                        metavar=("user", "password"))
+                      help="the ftp account's username and password",
+                      metavar=("user", "password"))
     auth.add_argument("-a", "--anon", action="store_true", dest="anonymous",
-                        help="set user as anonymous", default=False)
+                      help="set user as anonymous", default=False)
 
     shell.add_argument("-p", "--port", dest="port", default="",
                        help="the ftp server port", metavar="port")
     shell.add_argument("-s", "--secure", action="store_const", const="s",
-                        dest="secure", default="",
-                        help="use the sftp protocol instead of ftp")
+                       dest="secure", default="",
+                       help="use the sftp protocol instead of ftp")
     shell.add_argument("-e", "--erase", action="store_const", const="e",
-                      dest="erase", default="",
-                      help="delete files not present at target site")
+                       dest="erase", default="",
+                       help="delete files not present at target site")
     shell.add_argument("-n", "--newer", action="store_const", const="n",
-                      dest="newer", default="",
-                      help="download only newer files")
+                       dest="newer", default="",
+                       help="download only newer files")
     shell.add_argument("-P", "--parallel", dest="parallel", default="",
                        nargs="?", metavar="N", const=2,
                        help="download N files in parallel. N=2 if not provide "
                        "any value")
     shell.add_argument("-r", "--reverse", action="store_const", const="R",
-                      dest="reverse", default="",
-                      help="reverse, upload files from local to remote")
+                       dest="reverse", default="",
+                       help="reverse, upload files from local to remote")
     shell.add_argument("--delete-first", action="store_const",
-                      const=" --delete-first", dest="del_first", default="",
-                      help="delete old files before transferring new ones")
+                       const=" --delete-first", dest="del_first", default="",
+                       help="delete old files before transferring new ones")
     shell.add_argument("--depth-first", action="store_const",
-                      const=" --depth-first", dest="depth_first", default="",
-                      help="descend into subdirectories, before transfer files")
+                       const=" --depth-first", dest="depth_first", default="",
+                       help="descend into subdirectories, before transfer "
+                       "files")
     shell.add_argument("--no-empty-dirs", action="store_const",
-                      const=" --no-empty-dirs", dest="no_empty_dir", default="",
-                      help="don't create empty dirs (needs --depth-first)")
+                       const=" --no-empty-dirs", dest="no_empty_dir",
+                       default="",
+                       help="don't create empty dirs (needs --depth-first)")
     shell.add_argument("--no-recursion", action="store_const",
-                      const=" --no-recursion", dest="no_recursion", default="",
-                      help="don't go to subdirectories")
+                       const=" --no-recursion", dest="no_recursion",
+                       default="",
+                       help="don't go to subdirectories")
     shell.add_argument("--dry-run", action="store_const",
-                      const=" --dry-run", dest="dry_run", default="",
-                      help="simulation, don't execute anything. Writes to log")
+                       const=" --dry-run", dest="dry_run", default="",
+                       help="simulation, don't execute anything. Writes to "
+                       "log")
     shell.add_argument("--use-cache", action="store_const",
-                      const=" --use-cache", dest="use_cache", default="",
-                      help="use cached directory listings")
+                       const=" --use-cache", dest="use_cache", default="",
+                       help="use cached directory listings")
     shell.add_argument("--del-source", action="store_const",
-                      const=" --Remove-source-files",
-                      dest="del_source", default="",
-                      help="remove files (no dirs) after transfer (Caution!)")
+                       const=" --Remove-source-files",
+                       dest="del_source", default="",
+                       help="remove files (no dirs) after transfer (Caution!)")
     shell.add_argument("--only-missing", action="store_const",
-                      const=" --only-missing", dest="missing", default="",
-                      help="download only missing files")
+                       const=" --only-missing", dest="missing", default="",
+                       help="download only missing files")
     shell.add_argument("--only-existing", action="store_const",
-                      const=" --only-existing", dest="existing", default="",
-                      help="download only files already existing at target")
+                       const=" --only-existing", dest="existing", default="",
+                       help="download only files already existing at target")
     shell.add_argument("--loop", action="store_const",
-                      const=" --loop", dest="loop", default="",
-                      help="loop until no changes found")
+                       const=" --loop", dest="loop", default="",
+                       help="loop until no changes found")
     shell.add_argument("--ignore-size", action="store_const",
-                      const=" --ignore-size", dest="size", default="",
-                      help="ignore size when deciding whether to download")
+                       const=" --ignore-size", dest="size", default="",
+                       help="ignore size when deciding whether to download")
     shell.add_argument("--ignore-time", action="store_const",
-                      const=" --ignore-time", dest="time", default="",
-                      help="ignore time when deciding whether to download")
+                       const=" --ignore-time", dest="time", default="",
+                       help="ignore time when deciding whether to download")
     shell.add_argument("--no-perms", action="store_const",
-                      const=" --no-perms", dest="no_perms", default="",
-                      help="don't set file permissions")
+                       const=" --no-perms", dest="no_perms", default="",
+                       help="don't set file permissions")
     shell.add_argument("--no-umask", action="store_const",
-                      const=" --no-umask", dest="no_umask", default="",
-                      help="don't apply umask to file modes")
+                       const=" --no-umask", dest="no_umask", default="",
+                       help="don't apply umask to file modes")
     shell.add_argument("--no-symlinks", action="store_const",
-                      const=" --no-symlinks", dest="no_symlinks", default="",
-                      help="don't create symbolic links")
+                       const=" --no-symlinks", dest="no_symlinks", default="",
+                       help="don't create symbolic links")
     shell.add_argument("--allow-suid", action="store_const",
-                      const=" --allow-suid", dest="suid", default="",
-                      help="set suid/sgid bits according to remote site")
+                       const=" --allow-suid", dest="suid", default="",
+                       help="set suid/sgid bits according to remote site")
     shell.add_argument("--allow-chown", action="store_const",
-                      const=" --allow-chown",
-                      dest="chown", default="",
-                      help="try to set owner and group on files")
+                       const=" --allow-chown",
+                       dest="chown", default="",
+                       help="try to set owner and group on files")
     shell.add_argument("--dereference", action="store_const",
-                      const=" --dereference", dest="dereference", default="",
-                      help="download symbolic links as files")
+                       const=" --dereference", dest="dereference", default="",
+                       help="download symbolic links as files")
     shell.add_argument("--exclude-glob", action="append", dest="exc_glob",
                        default=[], metavar="GP",
-                       help="exclude matching files. GP is a glob pattern, e.g."
-                       " '*.zip'")
+                       help="exclude matching files. GP is a glob pattern, "
+                       "e.g. '*.zip'")
     shell.add_argument("--include-glob", action="append", dest="inc_glob",
                        default=[], metavar="GP",
-                       help="include matching files. GP is a glob pattern, e.g."
-                       " '*.zip'")
+                       help="include matching files. GP is a glob pattern, "
+                       "e.g. '*.zip'")
 
     shell.add_argument("-q", "--quiet", action="store_true", dest="quiet",
                        help="the detailed shell process is no "
                        "displayed, but is added to the log", default=False)
     shell.add_argument("--no-compress", action="store_true",
-                        dest="no_compress", help="don't create daily archive "
-                        "files", default=False)
+                       dest="no_compress", help="don't create daily archive "
+                       "files", default=False)
     shell.add_argument("--no-email", action="store_true", dest="no_email",
                        help="no sends email with the log", default=False)
-    shell.add_argument("--smtp_server", dest="smtp_server", default="localhost",
-                       metavar="server", help="set a smtp server")
+    shell.add_argument("--smtp_server", dest="smtp_server",
+                       default="localhost", metavar="server",
+                       help="set a smtp server")
     shell.add_argument("--smtp_user", dest="smtp_user", default="",
                        metavar="user", help="the smtp server username")
     shell.add_argument("--smtp_pass", dest="smtp_pass", default="",
@@ -502,7 +507,7 @@ def check_execs_posix_win(*progs):
             # the executable exists
             exe_paths = (''.join([Popen(cmd, stdout=PIPE, stderr=PIPE,
                                         shell=True).communicate()[0] for
-                                        cmd in win_cmds])).split(os.linesep)[0]
+                                  cmd in win_cmds])).split(os.linesep)[0]
             # Assign the path to the executable or report not found if empty
             windows_paths[prog] = exe_paths if exe_paths else not_found(prog)
         else:
@@ -581,7 +586,8 @@ def compress(path):
                                                                 gz_name)])
     for old_gz in old_gzs:
         os.remove(old_gz)
-        output += os.linesep.join([os.linesep, 'Deleted old file:', '', old_gz])
+        output += os.linesep.join([os.linesep, 'Deleted old file:', '',
+                                   old_gz])
     return output
 
 
@@ -600,8 +606,8 @@ def mirror(args, log):
     parallel = ' --parallel={0}'.format(args.parallel) if args.parallel else ''
 
     url = 'http://code.joedicastro.com/lftp-mirror'
-    msg = 'Connected to {1} as {2}{0}'.format(os.linesep, args.site, 'anonymous'
-                                              if args.anonymous
+    msg = 'Connected to {1} as {2}{0}'.format(os.linesep, args.site,
+                                              'anonymous' if args.anonymous
                                               else args.login[0])
     msg += 'Mirror {0} to {1}'.format(local if args.reverse else remote,
                                       remote if args.reverse else local)
@@ -631,7 +637,7 @@ def mirror(args, log):
                  'mirror {0} {1} {2}'.format(scp_args,
                                              local if args.reverse else remote,
                                              remote if args.reverse else local),
-                'exit')
+                 'exit')
         script.write(os.linesep.join(lines))
 
     # mirror
@@ -663,9 +669,13 @@ def mirror(args, log):
 def parse_parms(*parms):
     """Parse parameters from script or config file to shell format."""
     parameters = ("shell {0} {1} {2} {3} {4} {5} {6}".
-                 format(parms[0], '-p {0}'.format(parms[1]) if parms[1] else '',
-                        parms[2], parms[3], '-l {0}'.format(parms[4]) if
-                        parms[4] else '', base64.b64decode(parms[5]), parms[6]))
+                  format(parms[0],
+                         '-p {0}'.format(parms[1]) if parms[1] else '',
+                         parms[2],
+                         parms[3],
+                         '-l {0}'.format(parms[4]) if parms[4] else '',
+                         base64.b64decode(parms[5]),
+                         parms[6]))
     return parameters.split()
 
 
