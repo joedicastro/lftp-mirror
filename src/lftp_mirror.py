@@ -439,12 +439,12 @@ def arguments():
     shell.add_argument("--dereference", action="store_const",
                       const=" --dereference", dest="dereference", default="",
                       help="download symbolic links as files")
-    shell.add_argument("--exclude-glob", dest="exc_glob", default="",
-                       metavar="GP",
+    shell.add_argument("--exclude-glob", action="append", dest="exc_glob",
+                       default=[], metavar="GP",
                        help="exclude matching files. GP is a glob pattern, e.g."
                        " '*.zip'")
-    shell.add_argument("--include-glob", dest="inc_glob", default="",
-                       metavar="GP",
+    shell.add_argument("--include-glob", action="append", dest="inc_glob",
+                       default=[], metavar="GP",
                        help="include matching files. GP is a glob pattern, e.g."
                        " '*.zip'")
 
@@ -592,8 +592,12 @@ def mirror(args, log):
     user = '' if args.anonymous else ' '.join(args.login)
     local, remote = os.path.normpath(args.local), os.path.normpath(args.remote)
     port = '-p {0}'.format(args.port) if args.port else ''
-    include = ' --include-glob {0}'.format(args.inc_glob) if args.inc_glob else ''
-    exclude = ' --exclude-glob {0}'.format(args.exc_glob) if args.exc_glob else ''
+    include = ''
+    for iglob in args.inc_glob:
+        include += ' --include-glob {0}'.format(iglob)
+    exclude = ''
+    for eglob in args.exc_glob:
+        exclude += ' --exclude-glob {0}'.format(eglob)
     parallel = ' --parallel={0}'.format(args.parallel) if args.parallel else ''
 
     url = 'http://code.joedicastro.com/lftp-mirror'
