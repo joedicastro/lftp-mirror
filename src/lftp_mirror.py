@@ -624,6 +624,8 @@ def mirror(args, log):
                 args.no_symlinks + args.suid + args.chown + args.dereference +
                 exclude + include + parallel)
 
+    log.list('lftp mirror arguments', scp_args)
+
     with open('ftpscript', 'w') as script:
         lines = ('open {0}ftp://{1} {2}'.format(args.secure, args.site, port),
                  'user {0}'.format(user),
