@@ -59,8 +59,8 @@
 
 __author__ = "joe di castro - joe@joedicastro.com"
 __license__ = "GNU General Public License version 3"
-__date__ = "19/10/2011"
-__version__ = "0.13"
+__date__ = "14/9/2012"
+__version__ = "0.14"
 
 try:
     import sys
@@ -93,6 +93,7 @@ try:
     import pynotify
     import gtk
     NOT_NOTIFY = False
+    NOTIFY_ERRORS = []
 except ImportError:
     NOT_NOTIFY = True
 
@@ -538,7 +539,10 @@ def notify(msg, status):
              'ask': gtk.STOCK_DIALOG_QUESTION, 'sync': gtk.STOCK_JUMP_TO}
     icon = helper.render_icon(icons[status], gtk.ICON_SIZE_BUTTON)
     note.set_icon_from_pixbuf(icon)
-    note.show()
+    try:
+        note.show()
+    except Exception, e:
+        NOTIFY_ERRORS.append(e)
 
 
 def best_unit_size(bytes_size):
@@ -647,6 +651,9 @@ def mirror(args, log):
     # end mirroring
 
     log.list('lftp output', ''.join(sync.stdout.readlines()))
+
+    if NOTIFY_ERRORS:
+        log.list('Notification errors', set(NOTIFY_ERRORS))
 
     # compress the dir and create a .gz file with date
     if not args.reverse and not args.no_compress:
