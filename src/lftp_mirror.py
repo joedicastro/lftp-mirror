@@ -59,8 +59,8 @@
 
 __author__ = "joe di castro - joe@joedicastro.com"
 __license__ = "GNU General Public License version 3"
-__date__ = "14/9/2012"
-__version__ = "0.14"
+__date__ = "16/9/2012"
+__version__ = "0.15"
 
 try:
     import sys
@@ -89,13 +89,15 @@ except ImportError:
 
 # Notify it's not essential and libnotify it's not always installed (in Ubuntu
 # & Debian it's optional) but it's very useful to show operation's progress
-try:
-    import pynotify
-    import gtk
-    NOT_NOTIFY = False
-    NOTIFY_ERRORS = []
-except ImportError:
-    NOT_NOTIFY = True
+NOT_NOTIFY = True
+NOTIFY_ERRORS = []
+if os.getenv('DISPLAY', ''):
+    try:
+        import pynotify
+        import gtk
+        NOT_NOTIFY = False
+    except ImportError:
+        NOT_NOTIFY = True
 
 
 class Logger():
