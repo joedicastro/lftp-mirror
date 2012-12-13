@@ -469,7 +469,7 @@ this e-mail sent after running the sample configuration file, sample.cfg:
 
     SCRIPT =====================================================================
     lftp_mirror (ver. 0.7)
-    http://code.joedicastro.com/lftp-mirror
+    http://joedicastro.com
 
     Connected to ftp.debian.org as anonymous
     Mirror /debian/doc to debian
@@ -522,7 +522,7 @@ this e-mail sent after running the sample configuration file, sample.cfg:
 
     SCRIPT =====================================================================
     lftp_mirror (ver. 0.7)
-    http://code.joedicastro.com/lftp-mirror
+    http://joedicastro.com
 
     Connected to ftp.freebsd.org as anonymous
     Mirror /pub/FreeBSD/ERRATA to FreeBSD

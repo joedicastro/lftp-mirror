@@ -36,7 +36,7 @@
 # and there are not limits for sections.
 #
 # For further information visits the lftp_mirror's website:
-#     http://code.joedicastro.com/lftp-mirror
+#     http://joedicastro.com
 #
 #==============================================================================
 
@@ -611,7 +611,7 @@ def mirror(args, log):
         exclude += ' --exclude-glob {0}'.format(eglob)
     parallel = ' --parallel={0}'.format(args.parallel) if args.parallel else ''
 
-    url = 'http://code.joedicastro.com/lftp-mirror'
+    url = 'http://joedicastro.com'
     msg = 'Connected to {1} as {2}{0}'.format(os.linesep, args.site,
                                               'anonymous' if args.anonymous
                                               else args.login[0])
