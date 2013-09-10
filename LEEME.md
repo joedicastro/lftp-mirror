@@ -1,87 +1,87 @@
 ﻿# LFTP MIRROR
 
-Es un script escrito en Python que nos permite sincronizar un directorio en un 
-servidor remoto con un directorio local a través de FTP. Para ello hace uso del 
-estupendo programa 'lftp' de Alexander V. Lukyanov (http://lftp.yar.ru/), que es 
+Es un script escrito en Python que nos permite sincronizar un directorio en un
+servidor remoto con un directorio local a través de FTP. Para ello hace uso del
+estupendo programa 'lftp' de Alexander V. Lukyanov (http://lftp.yar.ru/), que es
 necesario para que funcione este script.
 
 A veces tenemos la necesidad de tener sincronizados dos directorios, uno en un
-servidor remoto y otro almacenado localmente y solo disponemos de acceso FTP al 
-servidor, sin posibilidad de emplear soluciones más idóneas a través de ssh como 
+servidor remoto y otro almacenado localmente y solo disponemos de acceso FTP al
+servidor, sin posibilidad de emplear soluciones más idóneas a través de ssh como
 rsync. Por ejemplo, para hacer copias de seguridad de un sitio web en un hosting
-compartido en el que no disponemos más que de una cuenta FTP para intercambiar 
+compartido en el que no disponemos más que de una cuenta FTP para intercambiar
 archivos.
 
-El problema con el que nos encontramos entonces es que realizar esta operación 
-a través de FTP es lento, porqué nos obliga en cierto modo a descargar todo el 
-contenido del directorio cada vez o bien controlar manualmente los cambios. 
-Carece además, a diferencia de rsync, de la facultad de descargar únicamente 
-aquella parte de los ficheros que ha cambiado. Algunos clientes de FTP (casi 
-todos gráficos) nos permiten conocer que ficheros han cambiando y descargar 
-estos únicamente, acelerando así el proceso de descargar y disminuyendo el 
-tráfico de red. Uno de estos clientes, lftp, es además de uno los más ligeros y 
-rápidos que existen, uno de los pocos que incorpora la funcionalidad para 
-sincronizar dos carpetas por defecto, mirror. Esta sincronización es 
-bidireccional, por lo cual se puede realizar en ambos sentidos: remoto a local 
-ó local a remoto. Siendo como es un programa de linea de comandos y soportando 
-la importación de configuración a través de script, es ideal para automatizar 
-todo el proceso a través de un shell script y crontab, para realizar una 
+El problema con el que nos encontramos entonces es que realizar esta operación
+a través de FTP es lento, porqué nos obliga en cierto modo a descargar todo el
+contenido del directorio cada vez o bien controlar manualmente los cambios.
+Carece además, a diferencia de rsync, de la facultad de descargar únicamente
+aquella parte de los ficheros que ha cambiado. Algunos clientes de FTP (casi
+todos gráficos) nos permiten conocer que ficheros han cambiando y descargar
+estos únicamente, acelerando así el proceso de descargar y disminuyendo el
+tráfico de red. Uno de estos clientes, lftp, es además de uno los más ligeros y
+rápidos que existen, uno de los pocos que incorpora la funcionalidad para
+sincronizar dos carpetas por defecto, mirror. Esta sincronización es
+bidireccional, por lo cual se puede realizar en ambos sentidos: remoto a local
+ó local a remoto. Siendo como es un programa de linea de comandos y soportando
+la importación de configuración a través de script, es ideal para automatizar
+todo el proceso a través de un shell script y crontab, para realizar una
 sincronización programada completamente automática.
 
-Dado que lftp soporta por defecto el empleo de scripts para automatizar las 
-tareas de ftp y programarlo automáticamente a través de cron es trivial, ¿qué 
+Dado que lftp soporta por defecto el empleo de scripts para automatizar las
+tareas de ftp y programarlo automáticamente a través de cron es trivial, ¿qué
 necesidad hay de crear un script como este?
 
 Bueno, este script aporta ciertas ventajas sobre emplear únicamente lftp:
 
 * Proporciona un registro de actividad detallado y legible que es almacenado
-  en disco y puede ser enviado por correo electrónico a una o varias 
-  direcciones, bien a través de un servidor local o uno externo. 
-* Permite crear una copia comprimida por día de la semana del directorio 
+  en disco y puede ser enviado por correo electrónico a una o varias
+  direcciones, bien a través de un servidor local o uno externo.
+* Permite crear una copia comprimida por día de la semana del directorio
   local sincronizado. Esto nos permite tener el directorio actualizado y una
   copia de seguridad por cada uno de los últimos 7 días, para poder revertir
-  algún cambio o borrado accidental. 
-* Nos proporciona (en el log) el tamaño del espacio ocupado por el 
+  algún cambio o borrado accidental.
+* Nos proporciona (en el log) el tamaño del espacio ocupado por el
   directorio local y las copias de seguridad en la unidad de almacenamiento.
-* Se centra únicamente en la sincronización (mirror) entre directorios, 
+* Se centra únicamente en la sincronización (mirror) entre directorios,
   obviando las otras opciones que nos ofrece lftp.
-* Permite tres modos de ejecución distintos, lo que lo convierte en muy 
+* Permite tres modos de ejecución distintos, lo que lo convierte en muy
   versátil:
-    * Como tarea programada. En este modo los parámetros de la 
-      sincronización se incluyen directamente dentro del script y solo es 
+    * Como tarea programada. En este modo los parámetros de la
+      sincronización se incluyen directamente dentro del script y solo es
       necesario programar su ejecución para automatizar el proceso. Es ideal
-      para la sincronización periódica de un único directorio/servidor FTP 
-    * Interactivo. En este modo los parámetros se introducen directamente 
-      como argumentos en la línea de comandos. Es ideal para ejecutar una 
+      para la sincronización periódica de un único directorio/servidor FTP
+    * Interactivo. En este modo los parámetros se introducen directamente
+      como argumentos en la línea de comandos. Es ideal para ejecutar una
       sincronización puntual manual.
     * Importando los parámetros desde un fichero de configuración. Este modo
-      es similar al primero, con la diferencia de que en este caso los 
-      parámetros los tomamos de un fichero de configuración externo. Este 
-      fichero que podemos crear nosotros mismos (se sirve uno de ejemplo) 
-      nos permite establecer múltiples operaciones de sincronización que se 
-      ejecutaran de manera secuencial una detrás de otra. Así por ejemplo 
-      podemos programarlo para que en una sola ejecución sincronice varios 
-      directorios/servidores FTP, sin limite en el número de estos. Nos 
-      permitiría por ejemplo crear varios ficheros de configuración que 
-      podríamos programar para su ejecución automática a diferentes franjas 
-      horarias, cubriendo de esto modo situaciones complejas en las que 
-      pueda interesar sincronizar diferentes directorios/servidores FTP en 
-      días/horas diferentes. Por ejemplo sincronizar unos directorios 
-      (e.g. 10) por la noche y otros al mediodía(e.g. 3) durante los días 
-      laborables y otros diferentes (e.g. 4) durante el fin de semana. Esto 
-      se podría automatizar con solo tres ficheros de configuración (uno por 
-      cada franja horaria) para sincronizar los 17 directorios/servidores 
-      FTP, lo que nos permite una gran flexibilidad sin tener que crear 
-      diferentes scripts para cada directorio/servidor FTP, solo 
-      estableciendo los parámetros de cada acción.  
+      es similar al primero, con la diferencia de que en este caso los
+      parámetros los tomamos de un fichero de configuración externo. Este
+      fichero que podemos crear nosotros mismos (se sirve uno de ejemplo)
+      nos permite establecer múltiples operaciones de sincronización que se
+      ejecutaran de manera secuencial una detrás de otra. Así por ejemplo
+      podemos programarlo para que en una sola ejecución sincronice varios
+      directorios/servidores FTP, sin limite en el número de estos. Nos
+      permitiría por ejemplo crear varios ficheros de configuración que
+      podríamos programar para su ejecución automática a diferentes franjas
+      horarias, cubriendo de esto modo situaciones complejas en las que
+      pueda interesar sincronizar diferentes directorios/servidores FTP en
+      días/horas diferentes. Por ejemplo sincronizar unos directorios
+      (e.g. 10) por la noche y otros al mediodía(e.g. 3) durante los días
+      laborables y otros diferentes (e.g. 4) durante el fin de semana. Esto
+      se podría automatizar con solo tres ficheros de configuración (uno por
+      cada franja horaria) para sincronizar los 17 directorios/servidores
+      FTP, lo que nos permite una gran flexibilidad sin tener que crear
+      diferentes scripts para cada directorio/servidor FTP, solo
+      estableciendo los parámetros de cada acción.
 * En sistemas operativos que lo soporten nos muestra notificaciones
-  emergentes a través de la librería libnotify de la ejecución del script y 
-  su correcta finalización. Por ejemplo, a través de las notificaciones 
-  emergentes de Ubuntu. Muy útil para conocer cuando se está ejecutando una 
+  emergentes a través de la librería libnotify de la ejecución del script y
+  su correcta finalización. Por ejemplo, a través de las notificaciones
+  emergentes de Ubuntu. Muy útil para conocer cuando se está ejecutando una
   tarea programada sin salida por shell.
-* Si empleamos los modos de ejecución no interactivos, emplea base64 para 
-  una mínima protección de la contraseñas de acceso a los servidores FTP y 
-  evitar almacenarlas las mismas en texto claro. No es una fuerte medida de 
+* Si empleamos los modos de ejecución no interactivos, emplea base64 para
+  una mínima protección de la contraseñas de acceso a los servidores FTP y
+  evitar almacenarlas las mismas en texto claro. No es una fuerte medida de
   seguridad, pero es lo mínimo que deberíamos tener en cuenta.
 
 ## FICHEROS
@@ -120,7 +120,7 @@ de python.
 La versión de python necesaria para ejecutar el script es la 2.7. Ahora bien, es
 posible correr el script en la versión 2.6 si instalamos el modulo argparse, que
 se incorporó a la librería estándar en la versión 2.7.
- 
+
 Instalar el modulo argparse en linux es sencillo, por ejemplo en Debian ó Ubuntu
 se haría del siguiente modo:
 
@@ -129,10 +129,10 @@ se haría del siguiente modo:
 
 ### lftp
 
-Evidentemente es necesario la instalación de este programa, pues es el que hace 
+Evidentemente es necesario la instalación de este programa, pues es el que hace
 el trabajo sucio.
 
-En Linux es realmente sencillo de instalarlo, pues viene en los repositorios de 
+En Linux es realmente sencillo de instalarlo, pues viene en los repositorios de
 las distribuciones más importantes. En Debian/Ubuntu:
 
     $ sudo apt-get install lftp
@@ -140,11 +140,11 @@ las distribuciones más importantes. En Debian/Ubuntu:
 
 ## INSTRUCCIONES
 
-Este es un script pensado para trabajar en la linea de comandos, dada la 
-naturaleza de su función, que no es otra que automatizar un proceso que una vez 
+Este es un script pensado para trabajar en la linea de comandos, dada la
+naturaleza de su función, que no es otra que automatizar un proceso que una vez
 lanzado no requiere de más intervención por nuestra parte.
 
-Si ejecutáramos el programa sin argumentos nos encontraríamos con un mensaje de 
+Si ejecutáramos el programa sin argumentos nos encontraríamos con un mensaje de
 error:
 
     $ python lftp_mirror.py
@@ -152,20 +152,20 @@ error:
     usage: lftp_mirror.py [-h] [-v] {cron,cfg,shell} ...
     lftp_mirror.py: error: too few arguments
 
-Qué nos está diciendo que para emplearlo necesitamos como mínimo alguno de estos 
-argumentos (`cron`, `cfg`  o `shell`) u opciones (`-h` ó `-v`). 
+Qué nos está diciendo que para emplearlo necesitamos como mínimo alguno de estos
+argumentos (`cron`, `cfg`  o `shell`) u opciones (`-h` ó `-v`).
 
-Estos tres argumentos serán los que definan el modo de ejecución del script, 
+Estos tres argumentos serán los que definan el modo de ejecución del script,
 como comentábamos en la introducción.
 
 ### cron
 
-En este modo se ejecuta tomando como parámetros los incluidos dentro del propio 
-script. Este modo es útil para cuando se realiza una sincronización periódica 
-sobre un solo servidor FTP/directorio. 
+En este modo se ejecuta tomando como parámetros los incluidos dentro del propio
+script. Este modo es útil para cuando se realiza una sincronización periódica
+sobre un solo servidor FTP/directorio.
 
-Para ejecutarlo nada más sencillo que localizar un bloque similar a este dentro 
-del script y modificar las entradas que se encuentran entre comillas, 
+Para ejecutarlo nada más sencillo que localizar un bloque similar a este dentro
+del script y modificar las entradas que se encuentran entre comillas,
 sustituyendo los valores por defecto por los valores que necesitemos.
 
     #===============================================================================
@@ -199,16 +199,16 @@ Finalmente solo tenemos que añadir a las tareas programadas (cron) esta entrada
 
 ### cfg
 
-Este modo es parecido al anterior, con la diferencia de que los parámetros de 
-ejecución se toman desde un fichero externo y que permite la ejecución 
+Este modo es parecido al anterior, con la diferencia de que los parámetros de
+ejecución se toman desde un fichero externo y que permite la ejecución
 consecutiva de varias operaciones de sincronización. Esto es ideal para ejecutar
 en una sola operación la sincronización de varios servidores de FTP/directorios.
-Evidentemente este modo también podría ser ejecutado periódicamente a través de 
+Evidentemente este modo también podría ser ejecutado periódicamente a través de
 cron.
- 
-Para utilizar este modo solo es necesario crear un fichero de texto con una 
-estructura determinada. Se incluye un fichero de configuración de ejemplo como 
-plantilla para crear los nuestros, sample.cfg. Este fichero no necesita 
+
+Para utilizar este modo solo es necesario crear un fichero de texto con una
+estructura determinada. Se incluye un fichero de configuración de ejemplo como
+plantilla para crear los nuestros, sample.cfg. Este fichero no necesita
 necesariamente esa extensión, aunque nos sirve para identificarlo.
 
 La estructura es la siguiente:
@@ -222,26 +222,26 @@ La estructura es la siguiente:
     password = (user password encoded in base64)
     options = (other options)
 
-Donde *section* es un identificador de la operación de sincronización. 
-Normalmente seria el nombre del servidor FTP o directorio a sincronizar. 
+Donde *section* es un identificador de la operación de sincronización.
+Normalmente seria el nombre del servidor FTP o directorio a sincronizar.
 
-Los valores encerrados entre paréntesis son opcionales, mientras que los 
+Los valores encerrados entre paréntesis son opcionales, mientras que los
 encerrados entre llaves son obligatorios. En el caso de que no especifiquemos un
-usuario y una contraseña si es necesario añadir la opción *-a* que especifica 
+usuario y una contraseña si es necesario añadir la opción *-a* que especifica
 que la conexión se realiza con el usuario anónimo.
 
-Es necesario crear una sección como esta por cada operación de sincronización 
-que deseemos realizar. 
+Es necesario crear una sección como esta por cada operación de sincronización
+que deseemos realizar.
 
-Un ejemplo real se puede ver en el contenido de sample.cfg: 
+Un ejemplo real se puede ver en el contenido de sample.cfg:
 
     [debian]
     site = ftp.debian.org
     port =
     remote = /debian/doc
     local = debian
-    user = 
-    password = 
+    user =
+    password =
     options = -aenP --exclude-glob '*.txt' --include-glob 'social*'
 
     [FreBSD]
@@ -249,15 +249,15 @@ Un ejemplo real se puede ver en el contenido de sample.cfg:
     port =
     remote = /pub/FreeBSD/ERRATA
     local = FreeBSD
-    user = 
+    user =
     password =
     options = -aenP
-     
-En este ejemplo real se ejecutarían las dos operaciones de forma consecutiva,
-primero sincronizaría con el servidor de Debian y al finalizar seguiría con el 
-servidor de FreeBSD. 
 
-Para ejecutar las operaciones contenidas en este fichero de configuración 
+En este ejemplo real se ejecutarían las dos operaciones de forma consecutiva,
+primero sincronizaría con el servidor de Debian y al finalizar seguiría con el
+servidor de FreeBSD.
+
+Para ejecutar las operaciones contenidas en este fichero de configuración
 usaríamos este comando:
 
     python lftp_mirror.py cfg sample.cfg
@@ -266,7 +266,7 @@ usaríamos este comando:
 ### shell
 
 Este modo se utiliza para realizar una operación de sincronización especificando
-los argumentos directamente en la linea de comandos. Es útil para 
+los argumentos directamente en la linea de comandos. Es útil para
 sincronizaciones puntuales.
 
 Para unas instrucciones completas, mejor acudir a la ayuda del script:
@@ -277,12 +277,12 @@ Aunque se podría resumir en esta linea de comandos:
 
     $ python lftp_mirror.py shell site remote local -l user password [options]
 
-donde *site* es el servidor FTP, *remote* el directorio remoto y *local* el 
+donde *site* es el servidor FTP, *remote* el directorio remoto y *local* el
 directorio local. *user* y *password* son usuario y contraseña del servidor FTP.
-El resto de las opciones es extenso, por lo cual es mejor recurrir a la ayuda 
+El resto de las opciones es extenso, por lo cual es mejor recurrir a la ayuda
 del script.
 
-El conjunto de argumentos y opciones se detallan a continuación: 
+El conjunto de argumentos y opciones se detallan a continuación:
 
 #### Argumentos del modo shell:
 
@@ -294,7 +294,7 @@ El conjunto de argumentos y opciones se detallan a continuación:
 
  El directorio remoto en el servidor FTP
 
-* `local` 
+* `local`
 
  El directorio local en nuestro equipo
 
@@ -321,11 +321,11 @@ El conjunto de argumentos y opciones se detallan a continuación:
  Establece una conexión segura empleando SFTP en lugar de FTP
 
 * `-e, --erase`
- 
+
  Borra en destino los ficheros que ya no se encuentran disponibles en origen
 
 * `-n, --newer`
- 
+
  Descarga únicamente los archivos nuevos
 
 * `-P [N], --parallel [N]`
@@ -385,11 +385,11 @@ El conjunto de argumentos y opciones se detallan a continuación:
  Ignora la fecha de los archivos a la hora de decidir que ficheros bajar y cuales no
 
 * `--no-perms`
-  
+
  No conserva los permisos en los ficheros
 
 * `--no-umask`
- 
+
  No aplica umask a los ficheros
 
 * `--no-symlinks`
@@ -401,7 +401,7 @@ El conjunto de argumentos y opciones se detallan a continuación:
  Establece los bits suid/sgid de acuerdo al destino
 
 * `--allow-chown`
- 
+
  Intenta establecer el propietario y el grupo en los ficheros
 
 * `--dereference`
@@ -421,53 +421,48 @@ El conjunto de argumentos y opciones se detallan a continuación:
 
 * `-q, --quiet`
 
- Esta opción nos permite especificar que la salida detallada del 
-proceso de sincronización no se visualizara por la linea de comandos y será 
-añadida al registro de actividad (tanto en el fichero como en el correo).  
+ Esta opción nos permite especificar que la salida detallada del
+proceso de sincronización no se visualizara por la linea de comandos y será
+añadida al registro de actividad (tanto en el fichero como en el correo).
 
-* `--no-compress` 
+* `--no-compress`
 
- Con esta opción desactivamos las copias de seguridad comprimidas 
-del directorio local. 
+ Con esta opción desactivamos las copias de seguridad comprimidas
+del directorio local.
 
-* `--no-email` 
+* `--no-email`
 
  Desactiva el envío del correo con el registro de actividad.
 
-El correo se envía por defecto al usuario local que ejecuta el script, usando 
-para ello el servidor de correo local. si se quiere emplear un servidor de 
-correo diferente o enviárselo a otro(s) destinatario(s), entonces es necesario 
+El correo se envía por defecto al usuario local que ejecuta el script, usando
+para ello el servidor de correo local. si se quiere emplear un servidor de
+correo diferente o enviárselo a otro(s) destinatario(s), entonces es necesario
 emplear las siguientes opciones:
 
-* `--smtp_server` 
+* `--smtp_server`
 
  El servidor de correo que deseamos emplear
 
-* `--smtp_user` 
+* `--smtp_user`
 
- El usuario del servidor de correo      
+ El usuario del servidor de correo
 
-* `--smtp_pass` 
+* `--smtp_pass`
 
  La contraseña de ese usuario
 
-* `--from_addr` 
+* `--from_addr`
 
  La dirección de email que ha de constar como remitente
 
-* `--to_addrs email` 
+* `--to_addrs email`
 
  La(s) dirección(es) de correo de a quien(es) queremos enviar el correo
 
 
 ## REPOSITORIO
 
-El código está alojado en un repositorio de Mercurial (hg) en BitBucket, así que
- puedes clonarlo directamente así:
-
-    hg clone http://bitbucket.org/joedicastro/lftp-mirror
-
-También está alojado en un repositorio Git en GitHub, emplea este comando para
+El código está alojado en un repositorio Git en GitHub, emplea este comando para
 poder clonarlo:
 
     git clone git://github.com/joedicastro/lftp-mirror.git
@@ -475,10 +470,10 @@ poder clonarlo:
 
 ## CARACTERÍSTICAS
 
-Cada vez que finaliza una ejecución añade el registro del actividad al fichero 
-de log que se crea en la carpeta raíz del directorio local y si no se indica lo 
+Cada vez que finaliza una ejecución añade el registro del actividad al fichero
+de log que se crea en la carpeta raíz del directorio local y si no se indica lo
 contrario envía un correo con el mismo contenido al usuario local. Un ejemplo de
-este registro de actividad se puede ver en este correo electrónico que se envía 
+este registro de actividad se puede ver en este correo electrónico que se envía
 después de ejecutar el fichero de configuración de ejemplo, sample.cfg:
 
 
@@ -595,7 +590,7 @@ después de ejecutar el fichero de configuración de ejemplo, sample.cfg:
     ================================================================================
 
 
-## ALTERNATIVAS 
+## ALTERNATIVAS
 
 Si mi script no encaja con lo que quieres, aquí tienes un resumen de alternativas para plataformas UNIX/Linux (las que conozco). Adjunto la mía como referencia.
 
@@ -605,7 +600,7 @@ Si mi script no encaja con lo que quieres, aquí tienes un resumen de alternativ
   - Tipo: script
   - Características: Las mencionadas arriba
   - Licencia: GPLv3
-  - Autor(es): Yo 
+  - Autor(es): Yo
 
 * __[lftp](http://lftp.yar.ru)__
 
@@ -636,7 +631,7 @@ Si mi script no encaja con lo que quieres, aquí tienes un resumen de alternativ
   - Lenguaje: C
   - Tipo: Aplicación linea comandos
   - Características: Solo funciona en una dirección: local a remoto
-  - Licencia: GPLv2 
+  - Licencia: GPLv2
   - Autor(es): Yuuki Ninomiya, Ludovic Drolez
 
 * __[ftpsync](http://sourceforge.net/projects/ftpsync)__
@@ -666,7 +661,7 @@ Si mi script no encaja con lo que quieres, aquí tienes un resumen de alternativ
 
 ## CONTRIBUCIONES
 
-Las contribuciones y las ideas son bienvenidas. Para contribuir a la mejora y 
+Las contribuciones y las ideas son bienvenidas. Para contribuir a la mejora y
 evolución de este script, puedes enviar sugerencias o errores a través de el
 sistema de issues.
 
